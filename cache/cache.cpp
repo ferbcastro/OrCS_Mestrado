@@ -405,6 +405,8 @@ uint32_t cache_t::write(memory_package_t* request){
 		}
 	}
     if (line == POSITION_FAIL) {
+		printf("Nunca deveria entrar aqui!!! (além disso essa parte do código está errada [Javan])\n");
+		assert(false);
         line = this->searchLru(&this->sets[idx]);
         this->add_change_line();
         if (this->sets[idx].lines[line].dirty == 1) {
