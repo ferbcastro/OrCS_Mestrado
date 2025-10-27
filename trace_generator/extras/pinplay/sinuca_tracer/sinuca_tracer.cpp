@@ -637,10 +637,12 @@ VOID ImageLoad(IMG img, VOID *) {
     std::vector<const char*> ORCS_tracing_control_start;
         /// No Wait
         ORCS_tracing_control_start.push_back(("_Z18ORCS_tracing_startv"));
+        ORCS_tracing_control_start.push_back(("ORCS_tracing_start"));
 
     std::vector<const char*> ORCS_tracing_control_stop;
         /// No Wait
         ORCS_tracing_control_stop.push_back(("_Z17ORCS_tracing_stopv"));
+        ORCS_tracing_control_stop.push_back(("ORCS_tracing_stop"));
 
     bool found_GOMP;
     std::string rtn_name;
