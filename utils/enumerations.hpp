@@ -8,6 +8,7 @@
 /**
  * Enum Branch Predictor
 */
+#include <cstdint>
 enum taken_t{
     NOT_TAKEN = 0,
     TAKEN = 1
@@ -34,7 +35,7 @@ enum directoryStatus_t {
 };
 // ======================================================
 /// Enumerates the INSTRUCTION (Opcode and Uop) operation type
-enum instruction_operation_t {
+enum instruction_operation_t : uint32_t {
     /// NOP
     INSTRUCTION_OPERATION_NOP,
     /// INTEGERS
@@ -90,7 +91,7 @@ enum instruction_operation_t {
 
 // ============================================================================
 /// Enumerates the types of branches
-enum branch_t {
+enum branch_t : uint32_t {
     BRANCH_SYSCALL,
     BRANCH_CALL,
     BRANCH_RETURN,

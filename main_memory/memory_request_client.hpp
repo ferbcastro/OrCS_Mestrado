@@ -1,13 +1,20 @@
 #ifndef MEMORY_REQUEST_CLIENT_H
 #define MEMORY_REQUEST_CLIENT_H
+
+#include "../utils/enumerations.hpp"
+
+extern "C" {
+#include <stdint.h>
+}
+
 class memory_request_client_t {
     public:
         package_state_t status;
         uint32_t readyAt;
         memory_operation_t memory_operation;
         bool waiting_DRAM;
-        
-        
+
+
         memory_request_client_t();
         virtual ~memory_request_client_t();
         #ifndef __PIN__

@@ -1,0 +1,63 @@
+#ifndef SINUCA3_GENERATOR_MEMORY_FILE_HPP_
+#define SINUCA3_GENERATOR_MEMORY_FILE_HPP_
+
+//
+// Copyright (C) 2024  HiPES - Universidade Federal do Paraná
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+/**
+ * @file memory_trace_writer.hpp
+ * @details A memory trace file stacks the memory operations. Each instruction
+ * may perform a variable number of accesses to the main memory, therefore
+ * this information must be stored somewhere. Since it may change dynamically,
+ * it is not suitable to be in the static trace, which means that the trace
+ * reader expects a MemoryTraceRecord with the number of operations performed by
+ * the instruction being fetched before the operations per se. Each access is
+ * stored in an individual MemoryTraceRecord. Note that the trace reader knowns
+ * if an instruction accesses the main memory, either writing or reading from
+ * it, because this is saved in the static trace.
+ */
+
+extern "C" {
+#include <zlib.h>
+}
+
+/** @brief Check memory_trace_writer.hpp documentation for details */
+class MemoryTraceWriter {
+  private:
+    gzFile file;
+
+  public:
+    inline MemoryTraceWriter() : file(NULL) {
+
+    };
+    inline ~MemoryTraceWriter() {
+        if (this->file) {
+            gzclose(this->file);
+        }
+    }
+
+    /** @brief  */
+    int OpenFile(const char* sourceDir, const char* imageName, int tid);
+    /** @brief  */
+    int AddNumberOfMemOperations(unsigned int memoryOperations);
+    /**
+     * @brief
+     */
+    int AddMemOp(unsigned long address, unsigned int size, bool isLoadOp);
+};
+
+#endif

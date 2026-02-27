@@ -1,12 +1,23 @@
 #ifndef OPCODE_PACKAGE_H
 #define OPCODE_PACKAGE_H
-#include <vector>
-// ============================================================================
-// ============================================================================
+
+#include "../defines.hpp"
+#include "../utils/enumerations.hpp"
+#include "../main_memory/memory_request_client.hpp"
+
+#include <cstdint>
+#include <string>
+
+extern "C" {
+#include <stdint.h>
+}
+
+
 class opcode_package_t : public memory_request_client_t {
     public:
         /// TRACE Variables
         char opcode_assembly[TRACE_LINE_SIZE];
+
         instruction_operation_t opcode_operation;
 
         uint32_t instruction_id;
@@ -14,11 +25,12 @@ class opcode_package_t : public memory_request_client_t {
         uint32_t opcode_size;
 
         int32_t read_regs[MAX_REGISTERS];
+        uint32_t num_load_regs;
         int32_t write_regs[MAX_REGISTERS];
+        uint32_t num_store_regs;
 
         uint32_t base_reg;
         uint32_t index_reg;
-
 
         uint64_t reads_addr[MAX_MEM_OPERATIONS];
         uint32_t reads_size[MAX_MEM_OPERATIONS];
@@ -48,7 +60,7 @@ class opcode_package_t : public memory_request_client_t {
         // ====================================================================
         /// Methods
         // ====================================================================
-        
+
         opcode_package_t();
         ~opcode_package_t();
 
@@ -59,6 +71,6 @@ class opcode_package_t : public memory_request_client_t {
         std::string content_to_string2();
         std::string log_registers();
         #endif
-       
+
 };
 #endif // OPCODE_PACKAGE_H
