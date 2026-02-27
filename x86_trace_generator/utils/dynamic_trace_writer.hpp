@@ -51,9 +51,9 @@ class DynamicTraceWriter {
     int OpenFile(const char* sourceDir, const char* img, int tid);
     /**
      * @brief Add thread event record to the trace file.
-     * @param type Event type
+     * @param
     */
-    int AddThreadEvent(ThreadEventType evType);
+    int AddThreadEvent(ThreadEventType evType, const char* rtn);
     /** @brief Add the identifier of basic block executed. */
     int AddBasicBlockTag(unsigned int basicBlockTag);
 };

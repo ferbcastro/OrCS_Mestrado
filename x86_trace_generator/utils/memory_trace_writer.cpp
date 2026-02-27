@@ -24,6 +24,7 @@
 
 #include "file_handler.hpp"
 #include "../../utils/macros.hpp"
+#include <cstring>
 
 extern "C" {
 #include <alloca.h>
@@ -51,5 +52,13 @@ int MemoryTraceWriter::AddNumberOfMemOperations(unsigned int numMemOps) {
 
 int MemoryTraceWriter::AddMemOp(unsigned long address, unsigned int size,
                                 bool isLoadOp) {
+    const char* operation = (isLoadOp) ? "R" : "W";
+    char* memoryOperation = (char*)alloca(strlen(operation) + sizeof(' ') +
+                                        MAX_U32_DIGITS + sizeof(' ') +
+                                        MAX_U64_DIGITS + sizeof(' ') +
+                                        MAX_U32_DIGITS + sizeof('\n') + sizeof('\0'));
+
+    sprintf(memoryOperation, "%c %u %lu %u\n", operation, size, address, );
+    unsigned long len =
 
 }

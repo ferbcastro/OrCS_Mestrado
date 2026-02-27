@@ -55,14 +55,14 @@ int StaticTraceWriter::OpenFile(const char* sourceDir, const char* imageName) {
 }
 
 int StaticTraceWriter::AddRoutineName(const char* rtn) {
-    unsigned long len = strlen(rtn) + 2 + sizeof('\0');
-    char* rtnNameFormatted = (char*)alloca(len);
+    char* rtnNameFormatted = (char*)alloca(sizeof('#') + strlen(rtn) + sizeof('\n') + sizeof('\0'));
     sprintf(rtnNameFormatted, "#%s\n", rtn);
+    unsigned long len = strlen(rtnNameFormatted);
     return (gzwrite(this->file, rtnNameFormatted, (unsigned int)len) != len);
 }
 
 int StaticTraceWriter::AddBasicBlockTag(unsigned int basicBlockTag) {
-    static char unsignedIntInStringFormat[MAX_U32_DIGITS + 2 + sizeof('\0')];
+    static char unsignedIntInStringFormat[sizeof('@') + MAX_U32_DIGITS + sizeof('\n') + sizeof('\0')];
     sprintf(unsignedIntInStringFormat, "@%u\n", basicBlockTag);
     unsigned long len = strlen(unsignedIntInStringFormat);
     return (gzwrite(this->file, unsignedIntInStringFormat, (unsigned int)len) != len);

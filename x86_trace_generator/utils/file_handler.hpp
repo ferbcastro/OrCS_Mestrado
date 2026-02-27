@@ -52,6 +52,7 @@ enum TargetArch : uint8_t { TargetArchX86, TargetArchARM, TargetArchRISCV };
 
 enum ThreadEventType : uint32_t {
     ThreadEventBarrierSync,
+    ThreadEventWaitCriticalStart,
     ThreadEventCriticalStart,
     ThreadEventCriticalEnd,
     ThreadEventAbruptEnd

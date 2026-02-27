@@ -48,8 +48,23 @@ int DynamicTraceWriter::OpenFile(const char* sourceDir, const char* imageName,
     return 0;
 }
 
-int DynamicTraceWriter::AddThreadEvent(ThreadEventType evType) {
+int DynamicTraceWriter::AddThreadEvent(ThreadEventType evType, const char* rtn) {
+    char* rtnHeader = (char*)alloca(sizeof('#') + strlen(rtn) + sizeof('\n') + sizeof('\0'));
+    char* event = (char*)alloca(sizeof('$') + MAX_U32_DIGITS + sizeof('\n') + sizeof('\0'));
 
+    sprintf(rtnHeader, "#%s\n", rtn);
+    sprintf(event, "$%u\n", evType);
+
+    unsigned long len = strlen(rtnHeader);
+    if (gzwrite(this->file, rtnHeader, (unsigned int)len) != len) {
+        return 1;
+    }
+    len = strlen(event);
+    if (gzwrite(this->file, event, (unsigned int)len) != len) {
+        return 1;
+    }
+
+    return 0;
 }
 
 int DynamicTraceWriter::AddBasicBlockTag(unsigned int tag) {

@@ -185,7 +185,6 @@ VOID OnThreadStart(THREADID tid, CONTEXT* ctxt, INT32 flags, VOID* v) {
     DEBUG_PRINTF("[OnThreadStart] thread id [%d]\n", tid);
     threadData->isInstrumentating = true;
     threadDataVec.push_back(threadData);
-    staticTrace->IncThreadCount();
     PIN_ReleaseLock(&threadAnalysisLock);
 }
 
@@ -210,8 +209,7 @@ VOID AppendToDynamicTrace(THREADID tid, UINT32 bblId, UINT32 numInst) {
             /*
              * This loop adds an abrupt end event to the dynamic trace, which
              * signals to the trace reader that all analysis code was abruptly
-             * halted and that obtained locks may not be released by an unlock
-             * thread event for example.
+             * halted and that obtained locks may not be released, for example.
              */
             for (unsigned int tid = 0; tid < threadDataVec.size(); ++tid) {
                 threadDataVec[tid]->dynamicTrace.AddThreadEvent(
@@ -238,7 +236,7 @@ VOID AppendToDynamicTrace(THREADID tid, UINT32 bblId, UINT32 numInst) {
 }
 
 /** @brief Add memory operations to trace. */
-VOID AppendToMemTrace(THREADID tid, PIN_MULTI_MEM_ACCESS_INFO* accessInfo) {
+VOID AppendToMemTrace(THREADID tid, UINT32 bbl, PIN_MULTI_MEM_ACCESS_INFO* accessInfo) {
     if (!WasThreadCreated(tid)) return;
 
     /*
@@ -246,31 +244,49 @@ VOID AppendToMemTrace(THREADID tid, PIN_MULTI_MEM_ACCESS_INFO* accessInfo) {
      * trace. Beware that the number of accesses is not fixed.
      */
     int totalOps = accessInfo->numberOfMemops;
-    int totalOpsCopy = totalOps;
+    int numStoreOps = 0;
+    int numLoadOps = 0;
 
     for (int i = 0; i < totalOpsCopy; ++i) {
-        if (!accessInfo->memop[i].maskOn) {
-            --totalOps;
+        if (accessInfo->memop[i].maskOn) {
+            if (acessInfo->memop[i].memopType == PIN_MEMOP_LOAD) {
+                numLoadOps++;
+            } else {
+                numStoreOps++;
+            }
         }
     }
 
-    if (threadDataVec[tid]->memoryTrace.AddNumberOfMemOperations(totalOps)) {
-        SINUCA3_ERROR_PRINTF(
-            "[AppendToMemTrace] Failed to add number of mem ops to file\n");
+    if (threadDataVec[tid]->memoryTrace.AddNumberOfMemOperations(numLoadOps)) {
+        DEBUG_PRINTF(
+            "[AppendToMemTrace] Failed to add number of loads\n");
     }
+    for (int i = 0; i < totalOps; i++) {
+        if (!accessInfo->memop[i].maskOn) continue;
 
-    for (int i = 0; i < totalOpsCopy; i++) {
-        if (!accessInfo->memop[i].maskOn) {
-            continue;
+        if (accessInfo->memop[i].memopType == PIN_MEMOP_LOAD) {
+            if (threadDataVec[tid]->memoryTrace.AddMemOp(
+                accessInfo->memop[i].memoryAddress,
+                accessInfo->memop[i].bytesAccessed,
+                true)) {
+                DEBUG_PRINTF("[AppendToMemTrace] Failed to add load op!\n");
+            }
         }
+    }
+    if (threadDataVec[tid]->memoryTrace.AddNumberOfMemOperations(numStoreOps)) {
+        DEBUG_PRINTF(
+            "[AppendToMemTrace] Failed to add number of loads\n");
+    }
+    for (int i = 0; i < totalOps; i++) {
+        if (!accessInfo->memop[i].maskOn) continue;
 
-        bool isLoadOp = (accessInfo->memop[i].memopType == PIN_MEMOP_LOAD);
-        int failed = threadDataVec[tid]->memoryTrace.AddMemOp(
-            accessInfo->memop[i].memoryAddress,
-            accessInfo->memop[i].bytesAccessed, isLoadOp);
-        if (failed) {
-            SINUCA3_ERROR_PRINTF(
-                "[AppendToMemTrace] Failed to add memory operation!\n");
+        if (accessInfo->memop[i].memopType == PIN_MEMOP_STORE) {
+            if (threadDataVec[tid]->memoryTrace.AddMemOp(
+                accessInfo->memop[i].memoryAddress,
+                accessInfo->memop[i].bytesAccessed,
+                false)) {
+                DEBUG_PRINTF("[AppendToMemTrace] Failed to add store op!\n");
+            }
         }
     }
 }
@@ -463,8 +479,6 @@ VOID OnTrace(TRACE trace, VOID* ptr) {
                 "[OnTrace] Failed to add basic block count to file\n");
         }
 
-        staticTrace->IncBasicBlockCount();
-
         for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
             static Instruction sinucaInst;
             /*
@@ -503,9 +517,12 @@ VOID OnTrace(TRACE trace, VOID* ptr) {
              * one or more memory accesses.
              */
             INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)AppendToMemTrace,
-                           IARG_THREAD_ID, IARG_MULTI_MEMORYACCESS_EA,
+                           IARG_THREAD_ID, IARG_UINT32, basicBlockIndex,
+                           IARG_MULTI_MEMORYACCESS_EA,
                            IARG_END);
         }
+
+        staticTrace->IncBasicBlockCount();
     }
 }
 
