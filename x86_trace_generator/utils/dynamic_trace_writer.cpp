@@ -56,11 +56,11 @@ int DynamicTraceWriter::AddThreadEvent(ThreadEventType evType, const char* rtn) 
     sprintf(event, "$%u\n", evType);
 
     unsigned long len = strlen(rtnHeader);
-    if (gzwrite(this->file, rtnHeader, (unsigned int)len) != len) {
+    if (gzwrite(this->file, rtnHeader, (unsigned int)len) != (int)len) {
         return 1;
     }
     len = strlen(event);
-    if (gzwrite(this->file, event, (unsigned int)len) != len) {
+    if (gzwrite(this->file, event, (unsigned int)len) != (int)len) {
         return 1;
     }
 
@@ -71,5 +71,5 @@ int DynamicTraceWriter::AddBasicBlockTag(unsigned int tag) {
     static char unsignedIntToString[MAX_U32_DIGITS + 1 + sizeof('\0')];
     sprintf(unsignedIntToString, "%u\n", tag);
     unsigned long len = strlen(unsignedIntToString);
-    return (gzwrite(this->file, unsignedIntToString, (unsigned int)len) != len);
+    return (gzwrite(this->file, unsignedIntToString, (unsigned int)len) != (int)len);
 }

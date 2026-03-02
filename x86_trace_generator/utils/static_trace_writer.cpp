@@ -58,14 +58,14 @@ int StaticTraceWriter::AddRoutineName(const char* rtn) {
     char* rtnNameFormatted = (char*)alloca(sizeof('#') + strlen(rtn) + sizeof('\n') + sizeof('\0'));
     sprintf(rtnNameFormatted, "#%s\n", rtn);
     unsigned long len = strlen(rtnNameFormatted);
-    return (gzwrite(this->file, rtnNameFormatted, (unsigned int)len) != len);
+    return (gzwrite(this->file, rtnNameFormatted, (unsigned int)len) != (int)len);
 }
 
-int StaticTraceWriter::AddBasicBlockTag(unsigned int basicBlockTag) {
+int StaticTraceWriter::AddBasicBlockHeader(unsigned int basicBlockTag) {
     static char unsignedIntInStringFormat[sizeof('@') + MAX_U32_DIGITS + sizeof('\n') + sizeof('\0')];
     sprintf(unsignedIntInStringFormat, "@%u\n", basicBlockTag);
     unsigned long len = strlen(unsignedIntInStringFormat);
-    return (gzwrite(this->file, unsignedIntInStringFormat, (unsigned int)len) != len);
+    return (gzwrite(this->file, unsignedIntInStringFormat, (unsigned int)len) != (int)len);
 }
 
 int StaticTraceWriter::AddInstruction(const opcode_package_t* inst) {
@@ -76,7 +76,7 @@ int StaticTraceWriter::AddInstruction(const opcode_package_t* inst) {
 
     this->OpcodeToTraceString(inst, this->traceString);
     unsigned long len = strlen(this->traceString);
-    return (gzwrite(this->file, this->traceString, (unsigned int)len) != len);
+    return (gzwrite(this->file, this->traceString, (unsigned int)len) != (int)len);
 }
 
 unsigned long StaticTraceWriter::GetTraceStringMaxSize() {
@@ -122,12 +122,11 @@ unsigned long StaticTraceWriter::GetTraceStringMaxSize() {
     totalSize += BOOL_VAL_SIZE;
     /* each value is separated by a space character */
     totalSize = totalSize * 2 - 1;
+
+    return totalSize;
 }
 
 void StaticTraceWriter::OpcodeToTraceString(const opcode_package_t* op, char* dest) {
-    unsigned int regLoadCount = 0;
-    unsigned int regStoreCount = 0;
-
     if (dest == NULL) {
         DEBUG_PRINTF("[OpcodeToTraceString] dest is null\n");
         return;

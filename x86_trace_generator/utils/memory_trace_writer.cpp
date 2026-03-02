@@ -24,6 +24,7 @@
 
 #include "file_handler.hpp"
 #include "../../utils/macros.hpp"
+#include <cstdio>
 #include <cstring>
 
 extern "C" {
@@ -47,18 +48,21 @@ int MemoryTraceWriter::OpenFile(const char* sourceDir, const char* imageName,
 }
 
 int MemoryTraceWriter::AddNumberOfMemOperations(unsigned int numMemOps) {
-
+    static char numOpsFormattedStr[sizeof('$') + MAX_U32_DIGITS + sizeof('\n') + sizeof('\0')];
+    sprintf(numOpsFormattedStr, "$%u\n", numMemOps);
+    unsigned long len = strlen(numOpsFormattedStr);
+    return (gzwrite(this->file, numOpsFormattedStr, (unsigned int)len) != (int)len);
 }
 
 int MemoryTraceWriter::AddMemOp(unsigned long address, unsigned int size,
-                                bool isLoadOp) {
+                                bool isLoadOp, int bbl) {
     const char* operation = (isLoadOp) ? "R" : "W";
     char* memoryOperation = (char*)alloca(strlen(operation) + sizeof(' ') +
                                         MAX_U32_DIGITS + sizeof(' ') +
                                         MAX_U64_DIGITS + sizeof(' ') +
                                         MAX_U32_DIGITS + sizeof('\n') + sizeof('\0'));
 
-    sprintf(memoryOperation, "%c %u %lu %u\n", operation, size, address, );
-    unsigned long len =
-
+    sprintf(memoryOperation, "%s %u %lu %u\n", operation, size, address, bbl);
+    unsigned long len = strlen(memoryOperation);
+    return (gzwrite(this->file, memoryOperation, (unsigned int)len) != (int)len);
 }

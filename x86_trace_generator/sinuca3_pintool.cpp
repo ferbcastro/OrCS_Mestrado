@@ -88,6 +88,7 @@ KNOB<std::string> KnobIntrinsics(KNOB_MODE_APPEND, "pintool", "i", "",
                                  "name:readregs:writeregs");
 
 std::vector<const char*> ignoreRtnsVec;
+std::vector<std::string> rtnsInstrumented;
 
 struct ThreadData {
     DynamicTraceWriter dynamicTrace;
@@ -99,8 +100,8 @@ struct ThreadData {
 std::vector<ThreadData*> threadDataVec;
 
 struct IntrinsicInfo {
-    char name[INST_MNEMONIC_LEN - 1];
-    char loaderName[INST_MNEMONIC_LEN + sizeof("__Loader")];  // Cache.
+    char name[TRACE_LINE_SIZE - 1];
+    char loaderName[TRACE_LINE_SIZE + sizeof("__Loader")];  // Cache.
     REG read[MAX_REGISTERS];
     REG write[MAX_REGISTERS];
     unsigned char numReadRegs;
@@ -139,7 +140,7 @@ VOID InitInstrumentation() {
 /** @brief Resume instrumentation in a thread. */
 VOID ResumeInstrumentationInThread(THREADID tid) {
     if (!WasThreadCreated(tid)) {
-        SINUCA3_ERROR_PRINTF("[ResumeInstrumentationInThread] thr not created");
+        DEBUG_PRINTF("[ResumeInstrumentationInThread] thr not created");
         return;
     }
     threadDataVec[tid]->isInstrumentating = true;
@@ -157,7 +158,7 @@ VOID StopInstrumentation() {
 /** @brief Disable instrumentation in a thread. */
 VOID StopInstrumentationInThread(THREADID tid) {
     if (!WasThreadCreated(tid)) {
-        SINUCA3_ERROR_PRINTF("[StopInstrumentationInThread] thr not created");
+        DEBUG_PRINTF("[StopInstrumentationInThread] thr not created");
         return;
     }
     threadDataVec[tid]->isInstrumentating = false;
@@ -167,19 +168,22 @@ VOID StopInstrumentationInThread(THREADID tid) {
 VOID OnThreadStart(THREADID tid, CONTEXT* ctxt, INT32 flags, VOID* v) {
     struct ThreadData* threadData = new ThreadData;
     if (!threadData) {
-        SINUCA3_ERROR_PRINTF("[OnThreadStart] Failed to alloc thread data.\n");
+        DEBUG_PRINTF("[OnThreadStart] Failed to alloc thread data.\n");
         return;
     }
 
     /* Create tracer files */
     if (threadData->dynamicTrace.OpenFile(traceDir, imageName, tid)) {
-        SINUCA3_ERROR_PRINTF(
+        DEBUG_PRINTF(
             "[OnThreadStart] Failed to open dynamic trace file\n");
     }
     if (threadData->memoryTrace.OpenFile(traceDir, imageName, tid)) {
-        SINUCA3_ERROR_PRINTF(
+        DEBUG_PRINTF(
             "[OnThreadStart] Failed to open memory trace file\n");
     }
+
+    threadData->dynamicTrace.AddHeader();
+    threadData->dynamicTrace.AddHeader();
 
     PIN_GetLock(&threadAnalysisLock, tid);
     DEBUG_PRINTF("[OnThreadStart] thread id [%d]\n", tid);
@@ -193,6 +197,8 @@ VOID OnThreadFini(THREADID tid, const CONTEXT* ctxt, INT32 code, VOID* v) {
     if (!WasThreadCreated(tid)) return;
     PIN_GetLock(&threadAnalysisLock, tid);
     DEBUG_PRINTF("[OnThreadFini] thread id [%d]\n", tid);
+    threadDataVec[tid]->dynamicTrace.AddEof();
+    threadDataVec[tid]->memoryTrace.AddEof();
     delete threadDataVec[tid];
     PIN_ReleaseLock(&threadAnalysisLock);
 }
@@ -205,7 +211,7 @@ VOID AppendToDynamicTrace(THREADID tid, UINT32 bblId, UINT32 numInst) {
 
     if (knobNumberOfInstructions.Value() != UINT_MAX) {
         if (numberOfExecInst > knobNumberOfInstructions.Value()) {
-            SINUCA3_WARNING_PRINTF("Reached maximum of instructions!\n");
+            ORCS_PRINTF("Reached maximum of instructions!\n");
             /*
              * This loop adds an abrupt end event to the dynamic trace, which
              * signals to the trace reader that all analysis code was abruptly
@@ -213,7 +219,7 @@ VOID AppendToDynamicTrace(THREADID tid, UINT32 bblId, UINT32 numInst) {
              */
             for (unsigned int tid = 0; tid < threadDataVec.size(); ++tid) {
                 threadDataVec[tid]->dynamicTrace.AddThreadEvent(
-                    ThreadEventAbruptEnd);
+                    ThreadEventAbruptEnd, "UNKOWN");
             }
             PIN_ReleaseLock(&threadAnalysisLock);
             PIN_ExitApplication(0);
@@ -222,13 +228,11 @@ VOID AppendToDynamicTrace(THREADID tid, UINT32 bblId, UINT32 numInst) {
 
     numberOfExecInst += numInst;
 
-    threadDataVec[tid]->dynamicTrace.IncExecutedInstructions(numInst);
-
     DEBUG_PRINTF("Thr [%d] adding bbl index [%u]\n", tid, bblId);
     DEBUG_PRINTF("Bbl [%u] has [%d] instructions\n", bblId, numInst);
 
-    if (threadDataVec[tid]->dynamicTrace.AddBasicBlockId(bblId)) {
-        SINUCA3_ERROR_PRINTF(
+    if (threadDataVec[tid]->dynamicTrace.AddBasicBlockTag(bblId)) {
+        DEBUG_PRINTF(
             "[AppendToDynamicTrace] Failed to add basic block id to file\n");
     }
 
@@ -247,9 +251,9 @@ VOID AppendToMemTrace(THREADID tid, UINT32 bbl, PIN_MULTI_MEM_ACCESS_INFO* acces
     int numStoreOps = 0;
     int numLoadOps = 0;
 
-    for (int i = 0; i < totalOpsCopy; ++i) {
+    for (int i = 0; i < totalOps; ++i) {
         if (accessInfo->memop[i].maskOn) {
-            if (acessInfo->memop[i].memopType == PIN_MEMOP_LOAD) {
+            if (accessInfo->memop[i].memopType == PIN_MEMOP_LOAD) {
                 numLoadOps++;
             } else {
                 numStoreOps++;
@@ -268,14 +272,14 @@ VOID AppendToMemTrace(THREADID tid, UINT32 bbl, PIN_MULTI_MEM_ACCESS_INFO* acces
             if (threadDataVec[tid]->memoryTrace.AddMemOp(
                 accessInfo->memop[i].memoryAddress,
                 accessInfo->memop[i].bytesAccessed,
-                true)) {
+                true, bbl)) {
                 DEBUG_PRINTF("[AppendToMemTrace] Failed to add load op!\n");
             }
         }
     }
     if (threadDataVec[tid]->memoryTrace.AddNumberOfMemOperations(numStoreOps)) {
         DEBUG_PRINTF(
-            "[AppendToMemTrace] Failed to add number of loads\n");
+            "[AppendToMemTrace] Failed to add number of stores\n");
     }
     for (int i = 0; i < totalOps; i++) {
         if (!accessInfo->memop[i].maskOn) continue;
@@ -284,55 +288,61 @@ VOID AppendToMemTrace(THREADID tid, UINT32 bbl, PIN_MULTI_MEM_ACCESS_INFO* acces
             if (threadDataVec[tid]->memoryTrace.AddMemOp(
                 accessInfo->memop[i].memoryAddress,
                 accessInfo->memop[i].bytesAccessed,
-                false)) {
+                false, bbl)) {
                 DEBUG_PRINTF("[AppendToMemTrace] Failed to add store op!\n");
             }
         }
     }
 }
 
-int TranslatePinInst(Instruction* inst, const INS* pinInst) {
+int TranslatePinInst(opcode_package_t* inst, const INS* pinInst) {
     if (inst == NULL) {
-        SINUCA3_ERROR_PRINTF("[TranslatePinInst] inst is nil\n");
+        DEBUG_PRINTF("[TranslatePinInst] inst is nil\n");
         return 1;
     }
     if (pinInst == NULL) {
-        SINUCA3_ERROR_PRINTF("[TranslatePinInst] pinInst is nil\n");
+        DEBUG_PRINTF("[TranslatePinInst] pinInst is nil\n");
         return 1;
     }
 
-    memset(inst, 0, sizeof(*inst));
+    inst->opcode_operation = INSTRUCTION_OPERATION_OTHER;
 
     std::string mnemonic = INS_Mnemonic(*pinInst);
-    unsigned long size = sizeof(inst->instructionMnemonic) - 1;
-    strncpy(inst->instructionMnemonic, mnemonic.c_str(), size);
+    unsigned long size = sizeof(inst->opcode_assembly) - 1;
+    strncpy(inst->opcode_assembly, mnemonic.c_str(), size);
     if (size < mnemonic.size()) {
-        SINUCA3_WARNING_PRINTF(
+        ORCS_PRINTF(
             "[TranslatePinInst] Insufficient space to store inst mnemonic\n");
     }
 
-    inst->instructionAddress = INS_Address(*pinInst);
+    inst->opcode_address = INS_Address(*pinInst);
     /* at most 15 bytes len (for now) */
-    inst->instructionSize = INS_Size(*pinInst);
-    /* manual flush with CLFLUSH/CLFLUSHOPT/CLWB/WBINVD/INVD */
-    /* or cache coherence induced flush */
-    inst->instCausesCacheLineFlush = INS_IsCacheLineFlush(*pinInst);
-    /* false for any instruction which in practice is a system call */
-    inst->isCallInstruction = INS_IsCall(*pinInst);
-    inst->isSyscallInstruction = INS_IsSyscall(*pinInst);
-    inst->isRetInstruction = INS_IsRet(*pinInst);
-    inst->isSysretInstruction = INS_IsSysret(*pinInst);
-    /* false for unconditional branches and calls */
-    inst->instHasFallthrough = INS_HasFallThrough(*pinInst);
-    /* false for system call */
-    inst->isBranchInstruction = INS_IsBranch(*pinInst);
-    inst->isIndirectCtrlFlowInst = INS_IsIndirectControlFlow(*pinInst);
+    inst->opcode_size = INS_Size(*pinInst);
     /* field checked before reading from memory trace */
-    inst->instReadsMemory = INS_IsMemoryRead(*pinInst);
-    inst->instWritesMemory = INS_IsMemoryWrite(*pinInst);
+    inst->num_reads = INS_IsMemoryRead(*pinInst) ? -1 : 0;
+    inst->num_writes = INS_IsMemoryWrite(*pinInst) ? -1 : 0;
     /* e.g. CMOV */
-    inst->isPredicatedInst = INS_IsPredicated(*pinInst);
-    inst->instPerformsAtomicUpdate = INS_IsAtomicUpdate(*pinInst);
+    inst->is_predicated = INS_IsPredicated(*pinInst);
+    inst->is_prefetch = INS_IsPrefetch(*pinInst);
+    inst->is_indirect = INS_IsIndirectControlFlow(*pinInst);
+    /* false for any instruction which in practice is a system call */
+    if (INS_IsCall(*pinInst)) {
+        inst->branch_type = BRANCH_CALL;
+        inst->opcode_operation = INSTRUCTION_OPERATION_BRANCH;
+    } else if (INS_IsSyscall(*pinInst)) {
+        inst->branch_type = BRANCH_SYSCALL;
+        inst->opcode_operation = INSTRUCTION_OPERATION_BRANCH;
+    } else if (INS_IsRet(*pinInst) || INS_IsSysret(*pinInst)) {
+        inst->branch_type = BRANCH_RETURN;
+        inst->opcode_operation = INSTRUCTION_OPERATION_BRANCH;
+    } else if (INS_IsBranch(*pinInst)) {
+        inst->opcode_operation = INSTRUCTION_OPERATION_BRANCH;
+        if (INS_HasFallThrough(*pinInst)) {
+            inst->branch_type = BRANCH_COND;
+        } else {
+            inst->branch_type = BRANCH_UNCOND;
+        }
+    }
 
     for (unsigned int i = 0; i < INS_OperandCount(*pinInst); ++i) {
         /* Interest only in register operands */
@@ -341,31 +351,31 @@ int TranslatePinInst(Instruction* inst, const INS* pinInst) {
         }
 
         const unsigned long readRegsArraySize =
-            sizeof(inst->readRegsArray) / sizeof(*inst->readRegsArray);
+            sizeof(inst->read_regs) / sizeof(*inst->read_regs);
         const unsigned long writeRegsArraySize =
-            sizeof(inst->writtenRegsArray) / sizeof(*inst->writtenRegsArray);
+            sizeof(inst->write_regs) / sizeof(*inst->write_regs);
 
         unsigned short reg = INS_OperandReg(*pinInst, i);
         if (INS_OperandRead(*pinInst, i)) {
-            if (inst->rRegsArrayOccupation >= readRegsArraySize) {
-                SINUCA3_ERROR_PRINTF(
+            if (inst->num_load_regs >= readRegsArraySize) {
+                DEBUG_PRINTF(
                     "[TranslatePinInst] More registers read than readRegsArray "
                     "can store\n");
                 return 1;
             }
-            inst->readRegsArray[inst->rRegsArrayOccupation] = reg;
-            ++inst->rRegsArrayOccupation;
+            inst->read_regs[inst->num_load_regs] = reg;
+            ++inst->num_load_regs;
         }
         if (INS_OperandWritten(*pinInst, i)) {
-            if (inst->wRegsArrayOccupation >= writeRegsArraySize) {
-                SINUCA3_ERROR_PRINTF(
+            if (inst->num_store_regs >= writeRegsArraySize) {
+                DEBUG_PRINTF(
                     "[TranslatePinInst] More registers written than "
                     "writtenRegsArray can "
                     "store\n");
                 return 1;
             }
-            inst->writtenRegsArray[inst->wRegsArrayOccupation] = reg;
-            ++inst->wRegsArrayOccupation;
+            inst->write_regs[inst->num_store_regs] = reg;
+            ++inst->num_store_regs;
         }
     }
 
@@ -390,42 +400,40 @@ IntrinsicInfo* GetIntrinsicInfo(const INS* ins) {
     return NULL;
 }
 
-int IntrinsicToSinucaInst(const INS* originalCall, IntrinsicInfo* info,
-                          Instruction* inst) {
-    memset(inst, 0, sizeof(*inst));
-
-    unsigned long size = sizeof(inst->instructionMnemonic) - 1;
-    strncpy(inst->instructionMnemonic, info->name, size);
+int TranslateIntrinsicInst(const INS* originalCall, IntrinsicInfo* info,
+                          opcode_package_t* inst) {
+    unsigned long size = sizeof(inst->opcode_assembly) - 1;
+    strncpy(inst->opcode_assembly, info->name, size);
     if (size < strlen(info->name)) {
-        SINUCA3_WARNING_PRINTF(
-            "[IntrinsicToSinucaInst] Insufficient space to store mnemonic\n");
+        ORCS_PRINTF(
+            "[orcsInst] Insufficient space to store mnemonic\n");
     }
 
-    inst->instructionAddress = INS_Address(*originalCall);
-    inst->instructionSize = INS_Size(*originalCall);
-    inst->rRegsArrayOccupation = info->numReadRegs;
-    inst->wRegsArrayOccupation = info->numWriteRegs;
+    inst->opcode_address = INS_Address(*originalCall);
+    inst->opcode_size = INS_Size(*originalCall);
+    inst->num_load_regs = info->numReadRegs;
+    inst->num_store_regs = info->numWriteRegs;
 
     // outros campos nao preenchidos
 
     const unsigned long readRegsArraySize =
-        sizeof(inst->readRegsArray) / sizeof(*inst->readRegsArray);
+        sizeof(inst->read_regs) / sizeof(*inst->read_regs);
     if (readRegsArraySize < info->numReadRegs) {
-        SINUCA3_WARNING_PRINTF(
-            "[IntrinsicToSinucaInst] Insufficient space to store read regs\n");
+        ORCS_PRINTF(
+            "[orcsInst] Insufficient space to store read regs\n");
         return 1;
     }
-    memcpy(inst->readRegsArray, info->read,
+    memcpy(inst->read_regs, info->read,
            info->numReadRegs * sizeof(*info->read));
 
     const unsigned long writeRegsArraySize =
-        sizeof(inst->writtenRegsArray) / sizeof(*inst->writtenRegsArray);
+        sizeof(inst->write_regs) / sizeof(*inst->write_regs);
     if (writeRegsArraySize < info->numWriteRegs) {
-        SINUCA3_WARNING_PRINTF(
-            "[IntrinsicToSinucaInst] Insufficient space to store write regs\n");
+        ORCS_PRINTF(
+            "[orcsInst] Insufficient space to store write regs\n");
         return 1;
     }
-    memcpy(inst->writtenRegsArray, info->write,
+    memcpy(inst->write_regs, info->write,
            info->numWriteRegs * sizeof(*info->write));
 
     return 0;
@@ -445,7 +453,7 @@ VOID OnTrace(TRACE trace, VOID* ptr) {
 
     RTN rtn = TRACE_Rtn(trace);
     if (!RTN_Valid(rtn)) {
-        SINUCA3_ERROR_PRINTF("[OnTrace] Found invalid routine! Skipping...\n");
+        DEBUG_PRINTF("[OnTrace] Found invalid routine! Skipping...\n");
         return;
     }
 
@@ -474,37 +482,32 @@ VOID OnTrace(TRACE trace, VOID* ptr) {
          * The trace reader needs to know where the block begins and
          * ends to create the basic block dictionary.
          */
-        if (staticTrace->AddBasicBlockSize(numberInstInBasicBlock)) {
-            SINUCA3_ERROR_PRINTF(
-                "[OnTrace] Failed to add basic block count to file\n");
+        if (staticTrace->AddBasicBlockHeader(basicBlockIndex)) {
+            DEBUG_PRINTF(
+                "[OnTrace] Failed to add basic block header to file\n");
         }
 
         for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
-            static Instruction sinucaInst;
-            /*
-             * The number of static instructions will later be useful while
-             * reading the trace and instantiating the basic block dictionary.
-             */
-            staticTrace->IncStaticInstructionCount();
+            opcode_package_t orcsInst;
 
             IntrinsicInfo* intrinsic = GetIntrinsicInfo(&ins);
             bool isIntrinsic = (intrinsic != NULL);
 
             if (isIntrinsic) {
-                IntrinsicToSinucaInst(&ins, intrinsic, &sinucaInst);
-                if (staticTrace->AddInstruction(&sinucaInst)) {
-                    SINUCA3_ERROR_PRINTF(
+                TranslateIntrinsicInst(&ins, intrinsic, &orcsInst);
+                if (staticTrace->AddInstruction(&orcsInst)) {
+                    DEBUG_PRINTF(
                         "[OnTrace] Failed to add intrinsic to file\n");
                 }
                 continue;
             }
 
-            if (TranslatePinInst(&sinucaInst, &ins)) {
-                SINUCA3_ERROR_PRINTF("[OnTrace] Failed to translate ins\n");
+            if (TranslatePinInst(&orcsInst, &ins)) {
+                DEBUG_PRINTF("[OnTrace] Failed to translate ins\n");
             }
 
-            if (staticTrace->AddInstruction(&sinucaInst)) {
-                SINUCA3_ERROR_PRINTF(
+            if (staticTrace->AddInstruction(&orcsInst)) {
+                DEBUG_PRINTF(
                     "[OnTrace] Failed to add instruction to file\n");
             }
 
@@ -633,8 +636,8 @@ VOID LoadIntrinsics() {
 
         // Copy the name.
         unsigned int nameSize = strlen(name);
-        if (nameSize > INST_MNEMONIC_LEN)
-            nameSize = INST_MNEMONIC_LEN - 1;
+        if (nameSize > TRACE_LINE_SIZE)
+            nameSize = TRACE_LINE_SIZE - 1;
         memcpy(&i->name[0], name, nameSize + 1);
         strcpy(&i->loaderName[0], "__");
         strcat(&i->loaderName[0], &i->name[0]);
@@ -646,25 +649,25 @@ VOID LoadIntrinsics() {
     }
 }
 
-VOID OnThreadEvent(THREADID tid, UINT32 evType, BOOL isMasterThreadEv) {
+VOID OnThreadEvent(THREADID tid, UINT32 evType, BOOL isMasterThreadEv, VOID* rtn) {
     if (!WasThreadCreated(tid)) {
-        SINUCA3_ERROR_PRINTF("[OnThreadEvent] thread [%d] not created!\n", tid);
+        DEBUG_PRINTF("[OnThreadEvent] thread [%d] not created!\n", tid);
         return;
     }
 
     PIN_GetLock(&threadAnalysisLock, tid);
 
     ThreadEventType thrEv = (ThreadEventType)evType;
-    if (threadDataVec[tid]->dynamicTrace.AddThreadEvent(thrEv)) {
-        SINUCA3_ERROR_PRINTF("[OnThreadEvent] AddThreadEvent failed!\n");
+    if (threadDataVec[tid]->dynamicTrace.AddThreadEvent(thrEv, (char*)rtn)) {
+        DEBUG_PRINTF("[OnThreadEvent] AddThreadEvent failed!\n");
         return;
     }
     DEBUG_PRINTF("[OnThreadEvent] added [%u] event to thread "
         "[%d]\n", evType, tid);
     if (isMasterThreadEv) {
         for (unsigned int it = 1; it < threadDataVec.size(); it++) {
-            if (threadDataVec[it]->dynamicTrace.AddThreadEvent(thrEv)) {
-                SINUCA3_ERROR_PRINTF("[OnThreadEvent] AddThreadEvent fail!\n");
+            if (threadDataVec[it]->dynamicTrace.AddThreadEvent(thrEv, (char*)rtn)) {
+                DEBUG_PRINTF("[OnThreadEvent] AddThreadEvent fail!\n");
                 return;
             }
             DEBUG_PRINTF("[OnThreadEvent] added [%u] event to thread "
@@ -750,11 +753,14 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
         return;
     }
 
+    staticTrace->AddHeader();
+
     for (SEC sec = IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec)) {
         for (RTN rtn = SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn)) {
             RTN_Open(rtn);
 
             std::string rtnName = RTN_Name(rtn);
+            rtnsInstrumented.push_back(rtnName);
             routineTreated = false;
             unsigned int it;
 
@@ -783,7 +789,7 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
                                     (AFUNPTR)OnThreadEvent,
                                     IARG_THREAD_ID,
                                     IARG_UINT32, ThreadEventBarrierSync,
-                                    IARG_BOOL, true,
+                                    IARG_BOOL, true, IARG_PTR, rtnsInstrumented.back().c_str(),
                                     IARG_END);
                     routineTreated = true;
                 }
@@ -796,7 +802,7 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
                                     (AFUNPTR)OnThreadEvent,
                                     IARG_THREAD_ID,
                                     IARG_UINT32, ThreadEventBarrierSync,
-                                    IARG_BOOL, true,
+                                    IARG_BOOL, true, IARG_PTR, rtnsInstrumented.back().c_str(),
                                     IARG_END);
                     routineTreated = true;
                 }
@@ -809,7 +815,7 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
                                     (AFUNPTR)OnThreadEvent,
                                     IARG_THREAD_ID,
                                     IARG_UINT32, ThreadEventBarrierSync,
-                                    IARG_BOOL, false,
+                                    IARG_BOOL, false, IARG_PTR, rtnsInstrumented.back().c_str(),
                                     IARG_END);
                     routineTreated = true;
                 }
@@ -822,7 +828,7 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
                                     (AFUNPTR)OnThreadEvent,
                                     IARG_THREAD_ID,
                                     IARG_UINT32, ThreadEventCriticalStart,
-                                    IARG_BOOL, false,
+                                    IARG_BOOL, false, IARG_PTR, rtnsInstrumented.back().c_str(),
                                     IARG_END);
                     routineTreated = true;
                 }
@@ -835,14 +841,14 @@ VOID OnImageLoad(IMG img, VOID* ptr) {
                                     (AFUNPTR)OnThreadEvent,
                                     IARG_THREAD_ID,
                                     IARG_UINT32, ThreadEventCriticalEnd,
-                                    IARG_BOOL, false,
+                                    IARG_BOOL, false, IARG_PTR, rtnsInstrumented.back().c_str(),
                                     IARG_END);
                     routineTreated = true;
                 }
             }
 
             if (!routineTreated) {
-                SINUCA3_WARNING_PRINTF("[OnImageLoad] Routine [%s] wasnt "
+                ORCS_PRINTF("[OnImageLoad] Routine [%s] wasnt "
                                         "treated!\n", rtnName.c_str());
             }
 
@@ -872,6 +878,7 @@ VOID OnFini(INT32 code, VOID* ptr) {
         free((void*)imageName);
     }
     if (staticTrace) {
+        staticTrace->AddEof();
         delete staticTrace;
     }
     if (!wasInitInstrumentationCalled) {
@@ -896,7 +903,7 @@ int main(int argc, char* argv[]) {
     PIN_InitLock(&threadAnalysisLock);
 
     if (knobForceInstrumentation.Value()) {
-        SINUCA3_WARNING_PRINTF("[main]: Instrumenting entire program\n");
+        ORCS_PRINTF("[main]: Instrumenting entire program\n");
         InitInstrumentation();
     } else {
         isInstrumentating = false;
