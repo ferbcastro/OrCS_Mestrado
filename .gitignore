@@ -1,4 +1,4 @@
-ompiled source #
+compiled source #
 ###################
 *.com
 *.class
@@ -39,3 +39,38 @@ Thumbs.db
 *.ipch
 results_memory_home_txt
 orcs
+
+# The Intel Pin comes with some .o files already compiled. # 
+# They should not be ignored by git.                       #
+############################################################
+!x86_trace_generator/pin/intel64/runtime/pincrt/crtendS.o
+!x86_trace_generator/pin/intel64/runtime/pincrt/crtbeginS.o
+!x86_trace_generator/pin/intel64/runtime/pincrt/crtend.o
+!x86_trace_generator/pin/intel64/runtime/pincrt/crtbegin.o
+!x86_trace_generator/pin/ia32/runtime/pincrt/crtendS.o
+!x86_trace_generator/pin/ia32/runtime/pincrt/crtbeginS.o
+!x86_trace_generator/pin/ia32/runtime/pincrt/crtend.o
+!x86_trace_generator/pin/ia32/runtime/pincrt/crtbegin.o
+!x86_trace_generator/pin/extras/components/lib/ia32/libdebugger-protocol.so
+!x86_trace_generator/pin/extras/components/lib/intel64/libdebugger-protocol.so
+!x86_trace_generator/pin/extras/xed-ia32/lib/libxed.so
+!x86_trace_generator/pin/extras/xed-intel64/lib/libxed.so
+!x86_trace_generator/pin/ia32/lib/libdwarf.so
+!x86_trace_generator/pin/ia32/lib/libpindwarf.so
+!x86_trace_generator/pin/ia32/lib/libpinjitprofiling.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libc++.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libc++abi.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libc-dynamic.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libdl-dynamic.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libm-dynamic.so
+!x86_trace_generator/pin/ia32/runtime/pincrt/libunwind-dynamic.so
+!x86_trace_generator/pin/intel64/lib/libdwarf.so
+!x86_trace_generator/pin/intel64/lib/libpindwarf.so
+!x86_trace_generator/pin/intel64/lib/libpinjitprofiling.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libc++.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libc++abi.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libc-dynamic.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libdl-dynamic.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libm-dynamic.so
+!x86_trace_generator/pin/intel64/runtime/pincrt/libunwind-dynamic.so
+!x86_trace_generator/pin/source/tools/InstLib/obj-intel64/
