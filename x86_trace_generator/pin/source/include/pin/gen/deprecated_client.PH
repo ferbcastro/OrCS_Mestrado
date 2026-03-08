@@ -24,7 +24,7 @@
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 
   @note DEPRECATED: See  CALLBACK_SetExecutionOrder.
@@ -43,7 +43,7 @@ extern PIN_DEPRECATED_API VOID CALLBACK_SetExecutionPriority(PIN_CALLBACK callba
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 
   @note DEPRECATED: See  CALLBACK_GetExecutionOrder.

@@ -28,7 +28,6 @@
 #include <cstring>
 
 #include "file_handler.hpp"
-#include "../../utils/macros.hpp"
 
 extern "C" {
 #include <alloca.h>
@@ -42,11 +41,14 @@ int StaticTraceWriter::OpenFile(const char* sourceDir, const char* imageName) {
     bufferSize = GetPathTidOutSize(sourceDir, imageName, STATIC_TRACE_SUFFIX);
     path = (char*)alloca(bufferSize);
     FormatPathTidOut(path, sourceDir, imageName, STATIC_TRACE_SUFFIX, bufferSize);
+
+    printf("Tentando abrir com gzopen\n");
     this->file = gzopen(path, "w");
     if (this->file == NULL) {
-        DEBUG_PRINTF("[OpenFile] Failed to alloc gz file [%s]\n", path);
+        printf("[OpenFile] Failed to alloc gz file [%s]\n", path);
         return 1;
     }
+    printf("Sucesso ao abrir arquivo\n");
 
     unsigned long traceStringSize = this->GetTraceStringMaxSize();
     this->traceString = new char[traceStringSize + sizeof('\0')];
@@ -70,7 +72,7 @@ int StaticTraceWriter::AddBasicBlockHeader(unsigned int basicBlockTag) {
 
 int StaticTraceWriter::AddInstruction(const opcode_package_t* inst) {
     if (this->traceString == NULL) {
-        DEBUG_PRINTF("[AddInstruction] trace string is null\n");
+        printf("[AddInstruction] trace string is null\n");
         return 1;
     }
 
@@ -128,7 +130,7 @@ unsigned long StaticTraceWriter::GetTraceStringMaxSize() {
 
 void StaticTraceWriter::OpcodeToTraceString(const opcode_package_t* op, char* dest) {
     if (dest == NULL) {
-        DEBUG_PRINTF("[OpcodeToTraceString] dest is null\n");
+        printf("[OpcodeToTraceString] dest is null\n");
         return;
     }
 
@@ -170,11 +172,10 @@ void StaticTraceWriter::OpcodeToTraceString(const opcode_package_t* op, char* de
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 
-    /* Temporary fix: num_reads and num_writes are both set to UINT_MAX so that
-    * the trace reader is forced to get these values from the memory file. */
-    sprintf(unsignedIntInStringFormat, "%u", UINT32_MAX);
+    sprintf(unsignedIntInStringFormat, "%u", op->num_reads);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
+    sprintf(unsignedIntInStringFormat, "%u", op->num_writes);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 
@@ -182,13 +183,13 @@ void StaticTraceWriter::OpcodeToTraceString(const opcode_package_t* op, char* de
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 
-    sprintf(unsignedIntInStringFormat, "%d", static_cast<int>(op->is_indirect));
+    sprintf(unsignedIntInStringFormat, "%d", (op->is_indirect) ? 1 : 0);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
-    sprintf(unsignedIntInStringFormat, "%d", static_cast<int>(op->is_predicated));
+    sprintf(unsignedIntInStringFormat, "%d", (op->is_predicated) ? 1 : 0);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
-    sprintf(unsignedIntInStringFormat, "%d", static_cast<int>(op->is_hive));
+    sprintf(unsignedIntInStringFormat, "%d", (op->is_hive) ? 1 : 0);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 
@@ -202,7 +203,7 @@ void StaticTraceWriter::OpcodeToTraceString(const opcode_package_t* op, char* de
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 
-    sprintf(unsignedIntInStringFormat, "%d", static_cast<int>(op->is_vima));
+    sprintf(unsignedIntInStringFormat, "%d", (op->is_vima) ? 1 : 0);
     strcat(dest, unsignedIntInStringFormat);
     strcat(dest, SPACE);
 }

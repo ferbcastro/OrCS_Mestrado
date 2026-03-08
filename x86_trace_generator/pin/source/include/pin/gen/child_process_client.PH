@@ -45,7 +45,7 @@ typedef BOOL (*FOLLOW_CHILD_PROCESS_CALLBACK)(CHILD_PROCESS cProcess, VOID* val)
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Windows, Linux, macOS*\n
+ * \b O/S:   Windows, Linux\n
  * \b CPU:   All\n
  */
 extern PIN_CALLBACK PIN_AddFollowChildProcessFunction(FOLLOW_CHILD_PROCESS_CALLBACK fun, VOID* val);

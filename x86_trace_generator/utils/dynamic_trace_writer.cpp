@@ -41,7 +41,7 @@ int DynamicTraceWriter::OpenFile(const char* sourceDir, const char* imageName,
     FormatPathTidIn(path, sourceDir, imageName, DYNAMIC_TRACE_SUFFIX, tid, bufferSize);
     this->file = gzopen(path, "w");
     if (this->file == NULL) {
-        DEBUG_PRINTF("[OpenFile] Failed to alloc gz file in dynamic trace!");
+        printf("[OpenFile] Failed to alloc gz file in dynamic trace!");
         return 1;
     }
 

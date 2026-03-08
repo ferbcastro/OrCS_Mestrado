@@ -23,7 +23,6 @@
 #include "memory_trace_writer.hpp"
 
 #include "file_handler.hpp"
-#include "../../utils/macros.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -40,7 +39,7 @@ int MemoryTraceWriter::OpenFile(const char* sourceDir, const char* imageName,
     FormatPathTidIn(path, sourceDir, imageName, MEMORY_TRACE_SUFFIX, tid, bufferSize);
     this->file = gzopen(path, "w");
     if (this->file == NULL) {
-        DEBUG_PRINTF("Failed to alloc this->file\n");
+        printf("Failed to alloc this->file\n");
         return 1;
     }
 

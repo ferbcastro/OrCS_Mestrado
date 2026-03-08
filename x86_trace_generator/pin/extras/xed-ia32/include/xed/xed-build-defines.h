@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -51,11 +51,8 @@ END_LEGAL */
 #  if !defined(XED_SUPPORTS_SHA)
 #    define XED_SUPPORTS_SHA
 #  endif
-#  if !defined(XED_SUPPORTS_WBNOINVD)
-#    define XED_SUPPORTS_WBNOINVD
-#  endif
 #  if !defined(XED_VERSION)
-#    define XED_VERSION "v2024.05.20"
+#    define XED_VERSION "000"
 #  endif
 #  if !defined(XED_VIA_ENABLED)
 #    define XED_VIA_ENABLED

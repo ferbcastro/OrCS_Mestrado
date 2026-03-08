@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 Intel Corporation.
+ * Copyright (C) 2020-2025 Intel Corporation.
  * SPDX-License-Identifier: MIT
  */
 
@@ -94,7 +94,7 @@ extern VOID IMG_SetLoaderInfo(IMG img, VOID* loaderInfo);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG IMG_Next(IMG img);
@@ -105,7 +105,7 @@ extern IMG IMG_Next(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG IMG_Prev(IMG img);
@@ -115,7 +115,7 @@ extern IMG IMG_Prev(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG IMG_Invalid();
@@ -125,7 +125,7 @@ extern IMG IMG_Invalid();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_Valid(IMG img);
@@ -135,7 +135,7 @@ extern BOOL IMG_Valid(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC IMG_SecHead(IMG img);
@@ -144,7 +144,7 @@ extern SEC IMG_SecHead(IMG img);
   @return Last section in image
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC IMG_SecTail(IMG img);
@@ -154,7 +154,7 @@ extern SEC IMG_SecTail(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SYM IMG_RegsymHead(IMG img);
@@ -167,7 +167,7 @@ extern SYM IMG_RegsymHead(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_DEPRECATED_API ADDRINT IMG_Entry(IMG img);
@@ -178,7 +178,7 @@ extern PIN_DEPRECATED_API ADDRINT IMG_Entry(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT IMG_EntryAddress(IMG img);
@@ -202,7 +202,7 @@ extern BOOL IMG_HasProperty(IMG img, IMG_PROPERTY property);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern const std::string& IMG_Name(IMG img);
@@ -212,7 +212,7 @@ extern const std::string& IMG_Name(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
  */
 extern ADDRINT IMG_Gp(IMG img);
@@ -243,7 +243,7 @@ extern ADDRINT IMG_LoadOffset(IMG img);
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern ADDRINT IMG_LowAddress(IMG img);
@@ -266,7 +266,7 @@ extern ADDRINT IMG_LowAddress(IMG img);
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern ADDRINT IMG_HighAddress(IMG img);
@@ -294,7 +294,7 @@ extern ADDRINT IMG_HighAddress(IMG img);
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern ADDRINT IMG_StartAddress(IMG img);
@@ -316,7 +316,7 @@ extern ADDRINT IMG_StartAddress(IMG img);
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern USIZE IMG_SizeMapped(IMG img);
@@ -326,7 +326,7 @@ extern USIZE IMG_SizeMapped(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG_TYPE IMG_Type(IMG img);
@@ -336,7 +336,7 @@ extern IMG_TYPE IMG_Type(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_IsMainExecutable(IMG x);
@@ -346,7 +346,7 @@ extern BOOL IMG_IsMainExecutable(IMG x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_hasLinesData(IMG x);
@@ -364,7 +364,7 @@ extern BOOL IMG_hasLinesData(IMG x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_IsInterpreter(IMG x);
@@ -374,7 +374,7 @@ extern BOOL IMG_IsInterpreter(IMG x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_IsStaticExecutable(IMG x);
@@ -389,7 +389,7 @@ extern BOOL IMG_IsStaticExecutable(IMG x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL IMG_IsVDSO(IMG img);
@@ -399,7 +399,7 @@ extern BOOL IMG_IsVDSO(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern UINT32 IMG_NumRegions(IMG img);
@@ -410,7 +410,7 @@ extern UINT32 IMG_NumRegions(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT IMG_RegionHighAddress(IMG img, UINT32 n);
@@ -421,7 +421,7 @@ extern ADDRINT IMG_RegionHighAddress(IMG img, UINT32 n);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT IMG_RegionLowAddress(IMG img, UINT32 n);
@@ -431,7 +431,7 @@ extern ADDRINT IMG_RegionLowAddress(IMG img, UINT32 n);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG SEC_Img(SEC sec);
@@ -441,7 +441,7 @@ extern IMG SEC_Img(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC SEC_Next(SEC sec);
@@ -451,7 +451,7 @@ extern SEC SEC_Next(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC SEC_Prev(SEC sec);
@@ -461,7 +461,7 @@ extern SEC SEC_Prev(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC SEC_Invalid();
@@ -471,7 +471,7 @@ extern SEC SEC_Invalid();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL SEC_Valid(SEC x);
@@ -481,7 +481,7 @@ extern BOOL SEC_Valid(SEC x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN SEC_RtnHead(SEC sec);
@@ -491,7 +491,7 @@ extern RTN SEC_RtnHead(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN SEC_RtnTail(SEC sec);
@@ -501,7 +501,7 @@ extern RTN SEC_RtnTail(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern const std::string& SEC_Name(SEC sec);
@@ -511,7 +511,7 @@ extern const std::string& SEC_Name(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC_TYPE SEC_Type(SEC sec);
@@ -521,7 +521,7 @@ extern SEC_TYPE SEC_Type(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL SEC_Mapped(SEC sec);
@@ -540,7 +540,7 @@ extern BOOL SEC_Mapped(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern const VOID* SEC_Data(SEC sec);
@@ -550,7 +550,7 @@ extern const VOID* SEC_Data(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SEC RTN_Sec(RTN x);
@@ -560,7 +560,7 @@ extern SEC RTN_Sec(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN RTN_Next(RTN x);
@@ -570,7 +570,7 @@ extern RTN RTN_Next(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN RTN_Prev(RTN x);
@@ -580,7 +580,7 @@ extern RTN RTN_Prev(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN RTN_Invalid();
@@ -593,7 +593,7 @@ extern RTN RTN_Invalid();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL RTN_Valid(RTN x);
@@ -603,7 +603,7 @@ extern BOOL RTN_Valid(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern const std::string& RTN_Name(RTN x);
@@ -619,7 +619,7 @@ extern const std::string& RTN_Name(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL RTN_IsArtificial(RTN x);
@@ -629,7 +629,7 @@ extern BOOL RTN_IsArtificial(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern SYM RTN_Sym(RTN x);
@@ -649,7 +649,7 @@ extern UINT RTN_DynamicMethodId(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern AFUNPTR RTN_Funptr(RTN x);
@@ -664,7 +664,7 @@ extern AFUNPTR RTN_Funptr(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern UINT32 RTN_Id(RTN x);
@@ -674,7 +674,7 @@ extern UINT32 RTN_Id(RTN x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS BBL_InsHead(BBL x);
@@ -684,7 +684,7 @@ extern INS BBL_InsHead(BBL x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS BBL_InsTail(BBL x);
@@ -694,7 +694,7 @@ extern INS BBL_InsTail(BBL x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BBL BBL_Next(BBL x);
@@ -704,7 +704,7 @@ extern BBL BBL_Next(BBL x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BBL BBL_Prev(BBL x);
@@ -714,7 +714,7 @@ extern BBL BBL_Prev(BBL x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL BBL_Valid(BBL x);
@@ -722,9 +722,11 @@ extern BOOL BBL_Valid(BBL x);
 /*! @ingroup INS_INSPECTION
   @return Routine that contains this instruction
 
+  See @ref RTN_FindByAddress for more information.
+
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN INS_Rtn(INS x);
@@ -734,7 +736,7 @@ extern RTN INS_Rtn(INS x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS INS_Next(INS x);
@@ -744,7 +746,7 @@ extern INS INS_Next(INS x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS INS_Prev(INS x);
@@ -754,7 +756,7 @@ extern INS INS_Prev(INS x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS INS_Invalid();
@@ -764,7 +766,7 @@ extern INS INS_Invalid();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL INS_Valid(INS x);
@@ -774,7 +776,7 @@ extern BOOL INS_Valid(INS x);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT INS_Address(INS ins);
@@ -935,7 +937,7 @@ struct SymbolDebugInfo
 
  @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern UINT32 IMG_Id(IMG x);
@@ -964,7 +966,7 @@ extern VOID* IMG_DynamicRawData(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG IMG_FindImgById(UINT32 id);
@@ -979,7 +981,7 @@ extern IMG IMG_FindImgById(UINT32 id);
 
  @par Availability:
  \b Mode:  JIT & Probe\n
- \b O/S:   Linux, Windows & macOS*\n
+ \b O/S:   Linux, Windows\n
  \b CPU:   All\n
  */
 extern IMG IMG_FindByAddress(ADDRINT address);
@@ -993,7 +995,7 @@ extern IMG IMG_FindByAddress(ADDRINT address);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK RTN_AddInstrumentFunction(RTN_INSTRUMENT_CALLBACK fun, VOID* val);
@@ -1009,7 +1011,7 @@ extern PIN_CALLBACK RTN_AddInstrumentFunction(RTN_INSTRUMENT_CALLBACK fun, VOID*
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK IMG_AddInstrumentFunction(IMAGECALLBACK fun, VOID* v);
@@ -1025,7 +1027,7 @@ extern PIN_CALLBACK IMG_AddInstrumentFunction(IMAGECALLBACK fun, VOID* v);
   @note The pin client lock is obtained during the call of this API.
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK IMG_AddUnloadFunction(IMAGECALLBACK fun, VOID* v);
@@ -1036,7 +1038,7 @@ extern PIN_CALLBACK IMG_AddUnloadFunction(IMAGECALLBACK fun, VOID* v);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern USIZE RTN_Range(RTN rtn);
@@ -1046,7 +1048,7 @@ extern USIZE RTN_Range(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern USIZE RTN_Size(RTN rtn);
@@ -1082,7 +1084,7 @@ extern RTN RTN_IFuncImplementation(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG IMG_Open(const std::string& filename);
@@ -1094,14 +1096,16 @@ extern IMG IMG_Open(const std::string& filename);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID IMG_Close(IMG img);
 
 /*! @ingroup RTN
-  Return the name of a function.  If more than one name is associated
-  with this address, the first name found is returned.
+  Return the name of a routine containing the given address. If more than one
+  name is associated with this address, the first name found is returned.
+
+  See @ref RTN_FindByAddress for more information.
 
   @param Address Memory address that corresponds to the RTN
   @return Name of routine, or "" if it is not found
@@ -1110,16 +1114,23 @@ extern VOID IMG_Close(IMG img);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern std::string RTN_FindNameByAddress(ADDRINT address);
 
 /*! @ingroup RTN
-  @param Address Memory address that corresponds to the RTN
+  Find the routine that contains the given memory address.
+
+  @param Address Memory address that corresponds to an RTN
   @return Handle to the RTN found. If not found returns RTN_Invalid()
-  In a multithreaded program, the returned RTN handle could go stale if
-  another thread unloaded the shared object that contains the RTN. Use
+
+  @note If a valid RTN handle is returned then it means that the given address was
+  within the RTN range. To verify that the given address is the start of the
+  RTN, you can compare it with the address returned by @ref RTN_Address.
+
+  @note In a multithreaded program, the returned RTN handle could go stale if
+  another thread unloads the shared object that contains the RTN. Use
   PIN_LockClient() before calling this routine and PIN_UnlockClient() after
   the last use of the returned RTN handle. Locking is automatic from an
   instrumentation routine, so it is unnecessary (but harmless) to lock calls
@@ -1128,21 +1139,40 @@ extern std::string RTN_FindNameByAddress(ADDRINT address);
   and returns a string which will not go stale if the shared library is
   unloaded
 
-  @note The pin client lock is obtained during the call of this API.
+  @note The pin client lock  must be obtained before calling this API from outside
+  an instrumentation callback.
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN RTN_FindByAddress(ADDRINT address);
 
 /*! @ingroup RTN
+    Find a routine in an image by name. This API will also go over mangled names
+    and demangle them for comparison.
+
   @param Img Image in which to search for RTN
   @param Name Name of the RTN to search in IMG
   @return Handle to the RTN found. If not found returns RTN_Invalid()
 
-  @note The pin client lock is obtained during the call of this API.
+  @note If more than one RTN matches the name, the first one found will be returned.
+  This can happen for overloaded functions. To find the exact overload, the correct
+  mangled name should be passed.
+
+  @note Because this function will iterate over all RTNs in the image, and will
+  demangle each name if the given name is not an exact match, it may have severe
+  performance implications. For finding several RTNs per image or for matching all overloads,
+  it is recommended that the caller iterates over the RTNs manually and decides on the
+  search criteria themselves. See @ref PIN_UndecorateSymbolName for information about
+  name demangling.
+
+  @note This function internally uses SYM APIs. So @ref PIN_InitSymbols should be called
+  for this API to work.
+
+  @note The pin client lock must be obtained before calling this API from outside
+  an instrumentation callback.
 
   @note In case this function is an Ifunc the return value will be the RTN
   that holds the implementation of that ifunc (Notice! this RTN can
@@ -1151,7 +1181,7 @@ extern RTN RTN_FindByAddress(ADDRINT address);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN RTN_FindByName(IMG img, const CHAR* name);
@@ -1162,7 +1192,7 @@ extern RTN RTN_FindByName(IMG img, const CHAR* name);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID RTN_Open(RTN rtn);
@@ -1172,7 +1202,7 @@ extern VOID RTN_Open(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID RTN_Close(RTN rtn);
@@ -1191,7 +1221,7 @@ extern VOID RTN_Close(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS RTN_InsHead(RTN rtn);
@@ -1207,7 +1237,7 @@ extern INS RTN_InsHead(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS RTN_InsHeadOnly(RTN rtn);
@@ -1222,7 +1252,7 @@ extern INS RTN_InsHeadOnly(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern INS RTN_InsTail(RTN rtn);
@@ -1232,7 +1262,7 @@ extern INS RTN_InsTail(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
  */
 extern UINT32 RTN_NumIns(RTN rtn);
@@ -1248,7 +1278,7 @@ extern UINT32 RTN_NumIns(RTN rtn);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
   NOTE: Pin does not support calling this function from either the TRACE or INS InstrumentationFunction callback
 */
@@ -1259,7 +1289,7 @@ extern VOID RTN_InsertCall(RTN rtn, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT RTN_Address(RTN rtn);
@@ -1293,7 +1323,7 @@ extern ADDRINT RTN_Address(RTN rtn);
 
  @par Availability:
  \b Mode:  JIT & Probe\n
- \b O/S:   Linux, Windows & macOS*\n
+ \b O/S:   Linux, Windows\n
  \b CPU:   All\n
  */
 extern RTN RTN_CreateAt(ADDRINT address, std::string name);
@@ -1305,7 +1335,7 @@ extern RTN RTN_CreateAt(ADDRINT address, std::string name);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
  */
 extern BOOL RTN_IsDynamic(RTN rtn);
@@ -1344,7 +1374,7 @@ extern USIZE SEC_Size(SEC sec);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL BBL_Original(BBL bbl);
@@ -1354,7 +1384,7 @@ extern BOOL BBL_Original(BBL bbl);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT BBL_Address(BBL bbl);
@@ -1364,7 +1394,7 @@ extern ADDRINT BBL_Address(BBL bbl);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern USIZE BBL_Size(BBL bbl);
@@ -1374,7 +1404,7 @@ extern USIZE BBL_Size(BBL bbl);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG APP_ImgHead();
@@ -1384,7 +1414,7 @@ extern IMG APP_ImgHead();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IMG APP_ImgTail();
@@ -1441,7 +1471,7 @@ extern IMG APP_ImgTail();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Windows, Linux & macOS*\n
+  \b O/S:   Windows, Linux\n
   \b CPU:   All\n
 */
 extern std::string PIN_UndecorateSymbolName(const std::string& symbolName, UNDECORATION style);

@@ -28,8 +28,6 @@ extern "C" {
 #include <stdint.h>
 }
 
-#include "../../utils/macros.hpp"
-
 #define _PACKED __attribute__((packed))
 
 const int MAX_U64_DIGITS = 20;

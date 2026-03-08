@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ END_LEGAL */
 #include "xed-state.h"
 #include "xed-operand-values-interface.h"
 #include "xed-print-info.h"
+#include "xed-chip-features.h"
 
 ///////////////////////////////////////////////////////
 /// API
@@ -290,19 +291,6 @@ xed_decoded_inst_get_length(const xed_decoded_inst_t* p) {
 
 //@}
 
-
-/// @name xed_decoded_inst_t get Byte 
-//@{
-/// @ingroup DEC
-/// Read itext byte.
-static XED_INLINE xed_uint8_t
-xed_decoded_inst_get_byte(const xed_decoded_inst_t* p, xed_uint_t byte_index)
-{
-    /// Read a whole byte from the normal input bytes.
-    xed_uint8_t out = p->_byte_array._dec[byte_index];
-    return out;
-}
-
 //@}
 
 /// @name Modes
@@ -363,10 +351,14 @@ XED_DLL_EXPORT xed_bool_t
 xed_decoded_inst_valid_for_chip(xed_decoded_inst_t const* const p, 
                                 xed_chip_enum_t chip);
 
+/// Indicate if this decoded instruction is valid for the specified
+/// #xed_chip_features_t chip
+/// @ingroup DEC
+XED_DLL_EXPORT xed_bool_t
+xed_decoded_inst_valid_for_features(xed_decoded_inst_t const *const p,
+                                    xed_chip_features_t const *const chip_features);
+
 //@}
-
-
-
 
 /// @name IFORM handling
 //@{
@@ -530,10 +522,16 @@ xed_decoded_inst_get_reg(const xed_decoded_inst_t* p,
                          xed_operand_enum_t reg_operand);
 
 /// @ingroup DEC
-/// Return DFV register enumeration if one of the instruction's operands
-/// is a "default flags values" pseudo-register and invalid register enumeration otherwise
-XED_DLL_EXPORT xed_reg_enum_t 
-xed_decoded_inst_get_dfv_reg(const xed_decoded_inst_t* xedd);
+/// Returns a non-zero value if the instruction supports "Default Flags Values" (DFV).
+XED_DLL_EXPORT xed_bool_t 
+xed_decoded_inst_has_default_flags_values(const xed_decoded_inst_t* xedd);
+
+/// @ingroup DEC
+/// Extracts the default flags values into the provided xed_flag_dfv_t struct.
+/// Returns 0 if the DFV is invalid.
+XED_DLL_EXPORT xed_bool_t 
+xed_decoded_inst_get_default_flags_values(const xed_decoded_inst_t* xedd, 
+                                          xed_flag_dfv_t* p);
 
 /// See the comment on xed_decoded_inst_uses_rflags(). This can return 
 /// 0 if the flags are really not used by this instruction.
@@ -688,11 +686,6 @@ xed_decoded_inst_set_user_data(xed_decoded_inst_t* p,
 /// @name xed_decoded_inst_t Classifiers
 //@{
 /// @ingroup DEC
-/// @brief True for APX instructions.
-/// includes instructions with EGPRs, REX2 and encodings that are treated as illegal on non-APX systems
-XED_DLL_EXPORT xed_bool_t
-xed_classify_apx(const xed_decoded_inst_t* d);
-/// @ingroup DEC
 /// True for AMX instructions
 XED_DLL_EXPORT xed_bool_t
 xed_classify_amx(const xed_decoded_inst_t* d);
@@ -712,6 +705,16 @@ xed_classify_avx(const xed_decoded_inst_t* d);
 /// True for SSE/SSE2/etc. SIMD operations.  Includes AES and PCLMULQDQ
 XED_DLL_EXPORT xed_bool_t
 xed_classify_sse(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// @brief True for APX foundation instructions.
+/// Includes the first set of instructions introduced as part of APX-F
+XED_DLL_EXPORT xed_bool_t
+xed_classify_apx_foundation(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// @brief True for APX instructions.
+/// Includes instructions with EGPRs, REX2 and encodings that are treated as illegal on non-APX systems
+XED_DLL_EXPORT xed_bool_t 
+xed_classify_apx(const xed_decoded_inst_t* d);
 //@}
 #endif
 

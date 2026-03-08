@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2023 Intel Corporation.
+ * Copyright (C) 2020-2025 Intel Corporation.
  * SPDX-License-Identifier: MIT
  */
 
@@ -423,18 +423,28 @@ extern VOID PIN_SetReplayMode(UINT32 flags);
  * if it is not already held.
  *
  * @param[in]   ctxt   context for the new thread.
- * @return      TRUE if a new thread was sucessfully spawned, FALSE if not.
+ * @return      TRUE if a new thread was successfully spawned, FALSE if not.
  *
  * @note The vm lock is obtained during the call of this API.
- * @note This function must be used on applications that are running with the (newer)
- *       NPTL version of pthread library. Running this function on an application that
- *       is running with the (older) LinuxThreads version of pthread can prevent PIN
- *       from shuting down the VM when the application exits.
+ * @note This function has limited use in scenarios other than replay with segment virtualization.
+ *       Spawning an application thread in normal instrumentation flows may be better achieved by calling the correct
+ *       application function for creating a thread (like pthread_create) using @ref PIN_CallApplicationFunction.
+ * @note Using this function in a normal instrumentation flow will work but the actual code that can be executed
+ *       in the new thread is limited to code that doesn't access the TLS using FS/GS (depending on the architecture
+ *       and O/S either one may be used). This means that even calling \c printf or accessing \c errno by the new thread 
+ *       may cause a segmentation fault. It is possible to force the values for GS/FS and GS/FS base after the transfer
+ *       to the new executed context to some well initialized TLS. If this is done then the new thread should have no
+ *       limitations.
+ * @note Code called from an analysis routine executed in the context of the thread has no special limitations. The notes
+ *       above are specific to the native code executed by the thread.
+ * @note The values passed in \a ctx for FS/GS and FS/GS base will not be used as the actual register values under which the
+ *       new thread executes.
+ * @note Segment virtualization can be turned on by passing the knobs <tt>-xyzzy -virtual_segments 1</tt> when executing Pin.
  *
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern BOOL PIN_SpawnApplicationThread(const CONTEXT* ctxt);
@@ -448,7 +458,7 @@ extern BOOL PIN_SpawnApplicationThread(const CONTEXT* ctxt);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_LockClient();
@@ -459,7 +469,7 @@ extern VOID PIN_LockClient();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_UnlockClient();
@@ -640,7 +650,7 @@ enum PROBE_MODE
 
   @par Availability:
   \b Mode:  Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern AFUNPTR RTN_ReplaceProbed(RTN replacedRtn, AFUNPTR replacementFun);
@@ -723,7 +733,7 @@ extern VOID PIN_CallApplicationFunction(const CONTEXT* ctxt, THREADID tid, CALLI
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL INS_IsAddedForFunctionReplacement(INS ins);
@@ -739,7 +749,7 @@ extern BOOL INS_IsAddedForFunctionReplacement(INS ins);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID CALLBACK_SetExecutionOrder(PIN_CALLBACK callback, CALL_ORDER order);
@@ -754,7 +764,7 @@ extern VOID CALLBACK_SetExecutionOrder(PIN_CALLBACK callback, CALL_ORDER order);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern CALL_ORDER CALLBACK_GetExecutionOrder(PIN_CALLBACK callback);
@@ -770,7 +780,7 @@ extern CALL_ORDER CALLBACK_GetExecutionOrder(PIN_CALLBACK callback);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK TRACE_AddInstrumentFunction(TRACE_INSTRUMENT_CALLBACK fun, VOID* val);
@@ -786,7 +796,7 @@ extern PIN_CALLBACK TRACE_AddInstrumentFunction(TRACE_INSTRUMENT_CALLBACK fun, V
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK INS_AddInstrumentFunction(INS_INSTRUMENT_CALLBACK fun, VOID* val);
@@ -805,7 +815,7 @@ extern PIN_CALLBACK INS_AddInstrumentFunction(INS_INSTRUMENT_CALLBACK fun, VOID*
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddFiniFunction(FINI_CALLBACK fun, VOID* val);
@@ -829,7 +839,7 @@ extern PIN_CALLBACK PIN_AddFiniFunction(FINI_CALLBACK fun, VOID* val);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern PIN_CALLBACK PIN_AddPrepareForFiniFunction(PREPARE_FOR_FINI_CALLBACK fun, VOID* val);
@@ -852,7 +862,7 @@ extern PIN_CALLBACK PIN_AddPrepareForFiniFunction(PREPARE_FOR_FINI_CALLBACK fun,
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_AddFetchFunction(FETCH_CALLBACK fun, VOID* val);
@@ -871,7 +881,7 @@ extern VOID PIN_AddFetchFunction(FETCH_CALLBACK fun, VOID* val);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern size_t PIN_FetchCode(void* copyBuf, const VOID* address, size_t maxSize, EXCEPTION_INFO* pExceptInfo);
@@ -879,8 +889,8 @@ extern size_t PIN_FetchCode(void* copyBuf, const VOID* address, size_t maxSize, 
 /*! @ingroup PIN_CONTROL
  * Register a notification function that is called when pin/tool is out
  * of memory.\n Try to reduce memory consumption when this notification function
- * is called.\n Any implicit or explicit usage of malloc()/realloc() etc. in
- * this notification function might cause an infinite recursion.\n
+ * is called.\n Any implicit or explicit usage of malloc()/realloc()/new operator etc.
+ * in this notification function might cause an infinite recursion.\n
  * The call to the notification function is NOT serialized by pin.
  * The user can't assume anything about the locks state while the
  * notification is delivered (as out of memory condition can occur anywhere).
@@ -893,11 +903,14 @@ extern size_t PIN_FetchCode(void* copyBuf, const VOID* address, size_t maxSize, 
  * @param fun Call back function is passed the size of the failing allocation
  * @param val Value to be passed to fun when it is called
  *
- * @note  The pin client lock is obtained during the call of this API.
+ * @note  The OUT_OF_MEMORY_CALLBACK will not be called for out of memory
+ *        conditions in a direct call to mmap. Only calls to memory allocation
+ *        functions that end-up using malloc will trigger the
+ *        callback (this is true for all standard C and C++ library allocation routines).
  *
  * @par Availability:
  * \b Mode:  JIT & PROBE\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern VOID PIN_AddOutOfMemoryFunction(OUT_OF_MEMORY_CALLBACK fun, VOID* val);
@@ -915,7 +928,7 @@ extern VOID PIN_AddOutOfMemoryFunction(OUT_OF_MEMORY_CALLBACK fun, VOID* val);
  *
  * @par Availability:
  * \b Mode:  JIT & PROBE\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern VOID PIN_AddXedDecodeCallbackFunction(XED_DECODE_CALLBACK fun);
@@ -933,10 +946,10 @@ extern VOID PIN_AddXedDecodeCallbackFunction(XED_DECODE_CALLBACK fun);
  *
  * @par Availability:
  * \b Mode:  JIT \n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
-extern VOID PIN_AddMemoryAddressTransFunction(MEMORY_ADDR_TRANS_CALLBACK fun, VOID* val);
+extern "C" VOID PIN_AddMemoryAddressTransFunction(MEMORY_ADDR_TRANS_CALLBACK fun, VOID* val);
 
 /*! @ingroup TRACE
  * Register a call back to be called when Pin detects a self modification of code in the application.
@@ -949,7 +962,7 @@ extern VOID PIN_AddMemoryAddressTransFunction(MEMORY_ADDR_TRANS_CALLBACK fun, VO
  *
  * @par Availability:
  * \b Mode:  JIT \n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern VOID TRACE_AddSmcDetectedFunction(SMC_CALLBACK fun, VOID* val);
@@ -962,7 +975,7 @@ extern VOID TRACE_AddSmcDetectedFunction(SMC_CALLBACK fun, VOID* val);
  * @param val Value to be passed to fun when it is called
  * @par Availability:
  * \b Mode:  JIT & PROBE\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern MEMORY_ADDR_TRANS_CALLBACK PIN_GetMemoryAddressTransFunction();
@@ -986,7 +999,7 @@ extern MEMORY_ADDR_TRANS_CALLBACK PIN_GetMemoryAddressTransFunction();
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, macOS*\n
+  \b O/S:   Linux\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddDetachFunction(DETACH_CALLBACK fun, VOID* val);
@@ -1025,7 +1038,7 @@ extern PIN_CALLBACK PIN_AddDetachFunctionProbed(DETACH_PROBED_CALLBACK fun, VOID
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddThreadStartFunction(THREAD_START_CALLBACK fun, VOID* val);
@@ -1055,7 +1068,7 @@ extern PIN_CALLBACK PIN_AddThreadStartFunction(THREAD_START_CALLBACK fun, VOID* 
 
  @par Availability:
  \b Mode:  Probe\n
- \b O/S:   Linux & macOS*\n
+ \b O/S:   Linux\n
  \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddThreadAttachProbedFunction(THREAD_ATTACH_PROBED_CALLBACK fun, VOID* val);
@@ -1088,7 +1101,7 @@ extern PIN_CALLBACK PIN_AddThreadAttachProbedFunction(THREAD_ATTACH_PROBED_CALLB
 
  @par Availability:
  \b Mode:  JIT\n
- \b O/S:   Linux & macOS*\n
+ \b O/S:   Linux\n
  \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddThreadAttachFunction(THREAD_ATTACH_CALLBACK fun, VOID* val);
@@ -1112,7 +1125,7 @@ extern PIN_CALLBACK PIN_AddThreadAttachFunction(THREAD_ATTACH_CALLBACK fun, VOID
 
  @par Availability:
  \b Mode:  Probe\n
- \b O/S:   Linux & macOS*\n
+ \b O/S:   Linux\n
  \b CPU:   All\n
  */
 extern PIN_CALLBACK PIN_AddThreadDetachProbedFunction(THREAD_DETACH_PROBED_CALLBACK fun, VOID* val);
@@ -1149,7 +1162,7 @@ extern PIN_CALLBACK PIN_AddThreadDetachFunction(THREAD_DETACH_CALLBACK fun, VOID
   This notification function is available when pin launches the application and when pin
   attaches to a running process.
 
-  On Unix (Linux & macOS*):
+  On Unix (Linux):
     This notification function is called on the application's main thread
     (both launch & attach mode).
     This notification is called right before Pin resume the application.
@@ -1181,7 +1194,7 @@ extern PIN_CALLBACK PIN_AddThreadDetachFunction(THREAD_DETACH_CALLBACK fun, VOID
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Windows, Linux, macOS*\n
+  \b O/S:   Windows, Linux\n
   \b CPU:   IA-32, Intel(R) 64\n
 */
 extern PIN_CALLBACK PIN_AddApplicationStartFunction(APPLICATION_START_CALLBACK fun, VOID* val);
@@ -1202,7 +1215,7 @@ extern PIN_CALLBACK PIN_AddApplicationStartFunction(APPLICATION_START_CALLBACK f
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddThreadFiniFunction(THREAD_FINI_CALLBACK fun, VOID* val);
@@ -1377,7 +1390,7 @@ typedef enum
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Windows, Linux & macOS*\n
+ * \b O/S:   Windows, Linux\n
  * \b CPU:   All\n
  */
 extern VOID PIN_SetSmcSupport(SMC_ENABLE_DISABLE_TYPE enable_disable);
@@ -1410,7 +1423,7 @@ enum FPOINT
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, macOS*\n
+ * \b O/S:   Linux\n
  * \b CPU:   All\n
 */
 extern PIN_CALLBACK PIN_AddForkFunction(FPOINT point, FORK_CALLBACK fun, VOID* val);
@@ -1425,7 +1438,7 @@ extern PIN_CALLBACK PIN_AddForkFunction(FPOINT point, FORK_CALLBACK fun, VOID* v
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_RemoveInstrumentation();
@@ -1443,7 +1456,7 @@ extern VOID PIN_RemoveInstrumentation();
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_RemoveInstrumentationInRange(ADDRINT start, ADDRINT end);
@@ -1460,7 +1473,7 @@ extern VOID PIN_RemoveInstrumentationInRange(ADDRINT start, ADDRINT end);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_RemoveFiniFunctions();
@@ -1505,7 +1518,7 @@ extern VOID PIN_RemoveFiniFunctions();
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows, & macOS*\n
+  \b O/S:   Linux, Windows,\n
   \b CPU:   All\n
 */
 extern VOID PIN_Detach();
@@ -1531,6 +1544,10 @@ enum ATTACH_STATUS
  *
  * @note Pin's state can't be reconfigured in the scope of the callback function
  * (don't use @ref PIN_Init(), @ref PIN_InitSymbols(), @ref PIN_StartProgramProbed() etc.)
+ * 
+ * @note The caller must make sure no internal threads are created either by calling
+ *       @ref PIN_SpawnInternalThread or pthread_create/std::thread while re-attach is in progress.
+ *       Failing to do so may result in undefined behavior.
  *
  * @param fun Call back function to execute when starting to attach
  * @param val Value to be passed to fun when it is called
@@ -1567,7 +1584,7 @@ extern ATTACH_STATUS PIN_Attach(ATTACH_CALLBACK fun, VOID* val);
  *
  * @par Availability:
  * \b Mode:  Probe\n
- * \b O/S:   Linux, Windows, & macOS*\n
+ * \b O/S:   Linux, Windows,\n
  * \b CPU:   IA32, Intel64\n
  */
 extern VOID PIN_DetachProbed();
@@ -1582,6 +1599,10 @@ extern VOID PIN_DetachProbed();
  *
  * @note Pin's state can't be reconfigured in the scope of the callback function
  * (don't use @ref PIN_Init(), @ref PIN_InitSymbols(), @ref PIN_StartProgramProbed() etc.)
+ *
+ * @note The caller must make sure no internal threads are created either by calling
+ *       @ref PIN_SpawnInternalThread or pthread_create/std::thread while re-attach is in progress.
+ *       Failing to do so may result in undefined behavior.
  *
  * @param fun Call back function to execute when starting to attach
  * @param val Value to be passed to fun when it is called
@@ -1619,7 +1640,7 @@ extern ATTACH_STATUS PIN_AttachProbed(ATTACH_PROBED_CALLBACK fun, VOID* val);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertPredicatedCall(INS ins, IPOINT ipoint, AFUNPTR funptr, ...);
@@ -1640,7 +1661,7 @@ extern VOID INS_InsertPredicatedCall(INS ins, IPOINT ipoint, AFUNPTR funptr, ...
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
@@ -1668,7 +1689,7 @@ extern VOID INS_InsertCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertIfCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
@@ -1696,7 +1717,7 @@ extern VOID INS_InsertIfCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertThenCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
@@ -1767,7 +1788,7 @@ extern VOID INS_InsertThenCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertIfPredicatedCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
@@ -1794,7 +1815,7 @@ extern VOID INS_InsertIfPredicatedCall(INS ins, IPOINT action, AFUNPTR funptr, .
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_InsertThenPredicatedCall(INS ins, IPOINT action, AFUNPTR funptr, ...);
@@ -1809,7 +1830,7 @@ extern VOID INS_InsertThenPredicatedCall(INS ins, IPOINT action, AFUNPTR funptr,
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern PIN_CONFIGURATION_INFO PIN_CreateDefaultConfigurationInfo();
@@ -1863,7 +1884,7 @@ extern VOID PIN_SetAllowedConcurrentCallbacks(PIN_CONFIGURATION_INFO options, PI
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_StartProgram(PIN_CONFIGURATION_INFO options = PIN_CreateDefaultConfigurationInfo());
@@ -1883,7 +1904,7 @@ extern VOID PIN_StartProgram(PIN_CONFIGURATION_INFO options);
 
   @par Availability:
   \b Mode:  Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_StartProgramProbed();
@@ -1905,7 +1926,7 @@ extern const std::string& PIN_Version();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL PIN_Init(INT32 argc, CHAR** argv);
@@ -1932,7 +1953,7 @@ extern BOOL PIN_Init(INT32 argc, CHAR** argv);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID TRACE_InsertCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...);
@@ -1954,7 +1975,7 @@ extern VOID TRACE_InsertCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID TRACE_InsertIfCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...);
@@ -1976,7 +1997,7 @@ extern VOID TRACE_InsertIfCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID TRACE_InsertThenCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...);
@@ -1986,7 +2007,7 @@ extern VOID TRACE_InsertThenCall(TRACE trace, IPOINT action, AFUNPTR funptr, ...
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BBL TRACE_BblHead(TRACE trace);
@@ -1996,7 +2017,7 @@ extern BBL TRACE_BblHead(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BBL TRACE_BblTail(TRACE trace);
@@ -2006,7 +2027,7 @@ extern BBL TRACE_BblTail(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern ADDRINT TRACE_Address(TRACE trace);
@@ -2019,7 +2040,7 @@ extern ADDRINT TRACE_Address(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern USIZE TRACE_Size(TRACE trace);
@@ -2029,7 +2050,7 @@ extern USIZE TRACE_Size(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern RTN TRACE_Rtn(TRACE trace);
@@ -2043,7 +2064,7 @@ extern RTN TRACE_Rtn(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL TRACE_HasFallThrough(TRACE trace);
@@ -2053,7 +2074,7 @@ extern BOOL TRACE_HasFallThrough(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern UINT32 TRACE_NumBbl(TRACE trace);
@@ -2063,7 +2084,7 @@ extern UINT32 TRACE_NumBbl(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern UINT32 TRACE_NumIns(TRACE trace);
@@ -2082,7 +2103,7 @@ extern UINT32 TRACE_NumIns(TRACE trace);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID BBL_InsertCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
@@ -2100,7 +2121,7 @@ extern VOID BBL_InsertCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID BBL_InsertIfCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
@@ -2119,7 +2140,7 @@ extern VOID BBL_InsertIfCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
  */
 extern VOID BBL_InsertThenCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
@@ -2131,7 +2152,7 @@ extern VOID BBL_InsertThenCall(BBL bbl, IPOINT action, AFUNPTR funptr, ...);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern BOOL BBL_HasFallThrough(BBL bbl);
@@ -2144,7 +2165,7 @@ extern BOOL BBL_HasFallThrough(BBL bbl);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern BOOL PIN_SupportsProcessorState(PROCESSOR_STATE state);
@@ -2158,7 +2179,7 @@ extern BOOL PIN_SupportsProcessorState(PROCESSOR_STATE state);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern BOOL PIN_ContextContainsState(CONTEXT* ctxt, PROCESSOR_STATE state);
@@ -2186,7 +2207,7 @@ extern BOOL PIN_ContextContainsState(CONTEXT* ctxt, PROCESSOR_STATE state);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetContextRegval(CONTEXT* ctxt, REG reg, const UINT8* val);
@@ -2206,7 +2227,7 @@ extern VOID PIN_SetContextRegval(CONTEXT* ctxt, REG reg, const UINT8* val);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_GetContextRegval(const CONTEXT* ctxt, REG reg, UINT8* val);
@@ -2223,7 +2244,7 @@ extern VOID PIN_GetContextRegval(const CONTEXT* ctxt, REG reg, UINT8* val);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetContextReg(CONTEXT* ctxt, REG reg, ADDRINT val);
@@ -2240,7 +2261,7 @@ extern VOID PIN_SetContextReg(CONTEXT* ctxt, REG reg, ADDRINT val);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern ADDRINT PIN_GetContextReg(const CONTEXT* ctxt, REG reg);
@@ -2253,7 +2274,7 @@ extern ADDRINT PIN_GetContextReg(const CONTEXT* ctxt, REG reg);
  *                              the FPSTATE type is exposed by Pin.
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetContextFPState(CONTEXT* ctxt, const FPSTATE* fpstate);
@@ -2268,7 +2289,7 @@ extern VOID PIN_SetContextFPState(CONTEXT* ctxt, const FPSTATE* fpstate);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_GetContextFPState(const CONTEXT* ctxt, FPSTATE* fpstate);
@@ -2311,7 +2332,7 @@ extern VOID PIN_GetContextFXSave(const CONTEXT* ctxt, FXSAVE* fxsave);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern REGSET PIN_GetFullContextRegsSet();
@@ -2327,7 +2348,7 @@ extern REGSET PIN_GetFullContextRegsSet();
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SaveContext(const CONTEXT* ctxtFrom, CONTEXT* ctxtTo);
@@ -2355,7 +2376,7 @@ extern VOID PIN_SaveContext(const CONTEXT* ctxtFrom, CONTEXT* ctxtTo);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_ExecuteAt(const CONTEXT* ctxt);
@@ -2377,7 +2398,7 @@ extern VOID PIN_ExecuteAt(const CONTEXT* ctxt);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetSyscallArgument(CONTEXT* ctxt, SYSCALL_STANDARD std, UINT32 argNum, ADDRINT val);
@@ -2399,7 +2420,7 @@ extern VOID PIN_SetSyscallArgument(CONTEXT* ctxt, SYSCALL_STANDARD std, UINT32 a
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern ADDRINT PIN_GetSyscallArgument(const CONTEXT* ctxt, SYSCALL_STANDARD std, UINT32 argNum);
@@ -2417,7 +2438,7 @@ extern ADDRINT PIN_GetSyscallArgument(const CONTEXT* ctxt, SYSCALL_STANDARD std,
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetSyscallNumber(CONTEXT* ctxt, SYSCALL_STANDARD std, ADDRINT val);
@@ -2446,7 +2467,7 @@ extern VOID PIN_SetSyscallNumber(CONTEXT* ctxt, SYSCALL_STANDARD std, ADDRINT va
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern ADDRINT PIN_GetSyscallNumber(const CONTEXT* ctxt, SYSCALL_STANDARD std);
@@ -2466,7 +2487,7 @@ extern ADDRINT PIN_GetSyscallNumber(const CONTEXT* ctxt, SYSCALL_STANDARD std);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern ADDRINT PIN_GetSyscallReturn(const CONTEXT* ctxt, SYSCALL_STANDARD std);
@@ -2485,7 +2506,7 @@ extern ADDRINT PIN_GetSyscallReturn(const CONTEXT* ctxt, SYSCALL_STANDARD std);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetSyscallReturn(CONTEXT* ctxt, SYSCALL_STANDARD std, ADDRINT val);
@@ -2505,7 +2526,7 @@ extern VOID PIN_SetSyscallReturn(CONTEXT* ctxt, SYSCALL_STANDARD std, ADDRINT va
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern ADDRINT PIN_GetSyscallErrno(const CONTEXT* ctxt, SYSCALL_STANDARD std);
@@ -2526,7 +2547,7 @@ extern ADDRINT PIN_GetSyscallErrno(const CONTEXT* ctxt, SYSCALL_STANDARD std);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern VOID PIN_SetSyscallErrno(CONTEXT* ctxt, SYSCALL_STANDARD std, ADDRINT val);
@@ -2710,7 +2731,7 @@ extern VOID PIN_RaiseException(const CONTEXT* ctxt, THREADID tid, const EXCEPTIO
 
  @par Availability:
  \b Mode:  JIT\n
- \b O/S:   Linux, Windows & macOS*\n
+ \b O/S:   Linux, Windows\n
  \b CPU:   IA-32 and Intel(R) 64 architectures\n
 */
 extern VOID INS_RewriteMemoryOperand(INS ins, UINT32 memindex, REG reg);
@@ -2763,7 +2784,7 @@ extern VOID INS_RewriteMemoryOperand(INS ins, UINT32 memindex, REG reg);
 
  @par Availability:
  \b Mode:  JIT\n
- \b O/S:   Linux, Windows & macOS*\n
+ \b O/S:   Linux, Windows\n
  \b CPU:   IA-32 and Intel(R) 64 architectures\n
 */
 extern VOID INS_RewriteScatteredMemoryOperand(INS ins, UINT32 memindex);
@@ -2780,7 +2801,7 @@ extern VOID INS_RewriteScatteredMemoryOperand(INS ins, UINT32 memindex);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   IA-32 and Intel(R) 64 architectures\n
 */
 extern VOID INS_InsertIndirectJump(INS ins, IPOINT ipoint, REG reg);
@@ -2797,7 +2818,7 @@ extern VOID INS_InsertIndirectJump(INS ins, IPOINT ipoint, REG reg);
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   IA-32 and Intel(R) 64 architectures\n
 */
 extern VOID INS_InsertDirectJump(INS ins, IPOINT ipoint, ADDRINT tgt);
@@ -2819,7 +2840,7 @@ extern VOID INS_InsertDirectJump(INS ins, IPOINT ipoint, ADDRINT tgt);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern REG PIN_ClaimToolRegister();
@@ -2830,7 +2851,7 @@ extern REG PIN_ClaimToolRegister();
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux & macOS*\n
+  \b O/S:   Linux\n
   \b CPU:   All\n
  */
 extern CHAR* PIN_VmFullPath();
@@ -2860,7 +2881,7 @@ extern const CHAR* PIN_ToolFullPath();
  *
  * @par Availability:
  * \b Mode:  JIT & Probe\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   All\n
  */
 extern NORETURN VOID PIN_ExitProcess(INT32 exitCode);
@@ -2870,7 +2891,7 @@ extern NORETURN VOID PIN_ExitProcess(INT32 exitCode);
 
  @par Availability:
  \b Mode:  JIT & Probe\n
- \b O/S:   Linux, Windows & macOS*\n
+ \b O/S:   Linux, Windows\n
  \b CPU:   All\n
 */
 extern INT PIN_GetPid();
@@ -2880,7 +2901,7 @@ extern INT PIN_GetPid();
 
   @par Availability:
   \b Mode:  JIT\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID INS_Delete(INS ins);
@@ -2890,7 +2911,7 @@ extern VOID INS_Delete(INS ins);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID IARGLIST_AddArguments(IARGLIST args, ...);
@@ -2900,7 +2921,7 @@ extern VOID IARGLIST_AddArguments(IARGLIST args, ...);
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern IARGLIST IARGLIST_Alloc();
@@ -2910,7 +2931,7 @@ extern IARGLIST IARGLIST_Alloc();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID IARGLIST_Free(IARGLIST args);
@@ -2958,11 +2979,11 @@ extern size_t PIN_SafeCopy(VOID* dst, const VOID* src, size_t size);
  * @param[in]  src          region to copy from
  * @param[in]  size         number of bytes to copy
  * @param[out] pExceptInfo  pointer to the structure that receives the exception information
- *                          in case of failure.
+ *                          in case of failure and only when its value is not NULL,
  *
  * @return  Number of bytes successfully copied from the source to the destination region.
  *          If the function fails to copy all bytes, it provides detailed description of
- *          the failure in the \a <pExceptInfo> structure.
+ *          the failure in the \a <pExceptInfo> structure unless its value is NULL.
  *
  * @note The exception address in the returned exception information always has zero value.
  *       If the tool wants to raise this exception on behalf of the application, it should use
@@ -3181,10 +3202,34 @@ extern VOID* PIN_GetBufferPointer(CONTEXT* const ctxt, BUFFER_ID id);
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern BOOL PIN_CheckReadAccess(VOID* addr);
+
+/*! @ingroup PIN_CONTROL
+ * Given an address, this API checks whether the memory page which contains this address has a read access protection.
+ *
+ * In addition to the @ref PIN_CheckReadAccess functionality, 
+ * in case this function return false (no read permission),this function allows the tool to obtain detailed exception 
+ * information as if there was an attempt to read from this address.
+ * Please note that when the function return true, the exception will have code EXCEPTCODE_NONE.
+ * 
+ * @param[in]  addr         memory address
+ * @param[out] pExceptInfo  pointer to the structure that receives the exception information
+ *                          in case of failure and only when its value is not NULL.
+*
+ * @return     True if the memory page which contains the given address has a read access protection, false otherwise.
+ *
+ * @note PIN_CheckReadAccessEx() should not be called before the application has been started. For instance,
+ * it cannot be called in an Image load callback. Unexpected results will occur.
+ *
+ * @par Availability:
+ * \b Mode:  JIT\n
+ * \b O/S:   Linux, Windows\n
+ * \b CPU:   IA-32 and Intel(R) 64 architectures\n
+ */
+extern BOOL PIN_CheckReadAccessEx(VOID* addr, EXCEPTION_INFO* pExceptInfo);
 
 /*! @ingroup PIN_CONTROL
  * Given an address, this API checks whether the memory page which contains this address has a write access protection.
@@ -3196,14 +3241,40 @@ extern BOOL PIN_CheckReadAccess(VOID* addr);
  * @note PIN_CheckWriteAccess() should not be called before the application has been started. For instance,
  * it cannot be called in an Image load callback. Unexpected results will occur.
  *
- * @note PIN_CheckWriteAccess assume that if a memory page has a write access protection it also has a read
+ * @note PIN_CheckWriteAccess assume that if a memory page has a write access protection it also has a read access
  *
  * @par Availability:
  * \b Mode:  JIT\n
- * \b O/S:   Linux, Windows & macOS*\n
+ * \b O/S:   Linux, Windows\n
  * \b CPU:   IA-32 and Intel(R) 64 architectures\n
  */
 extern BOOL PIN_CheckWriteAccess(VOID* addr);
+
+/*! @ingroup PIN_CONTROL
+ * Given an address, this API checks whether the memory page which contains this address has a write access protection.
+ *
+ * In addition to the @ref PIN_CheckWriteAccess functionality, 
+ * in case this function return false (no write permission),this function allows the tool to obtain detailed exception 
+ * information as if there was an attempt to write to this address.
+ * Please note that when the function return true, the exception will have code EXCEPTCODE_NONE.
+ *
+ * @param[in]  addr     memory address
+ * @param[out] pExceptInfo  pointer to the structure that receives the exception information
+ *                          in case of failure and only when its value is not NULL
+ *
+ * @return     True if the memory page which contains the given address has a write access protection, false otherwise.
+ *
+ * @note PIN_CheckWriteAccess() should not be called before the application has been started. For instance,
+ * it cannot be called in an Image load callback. Unexpected results will occur.
+ *
+ * @note PIN_CheckWriteAccessEx assume that if a memory page has a write access protection it also has a read access
+ *
+ * @par Availability:
+ * \b Mode:  JIT\n
+ * \b O/S:   Linux, Windows\n
+ * \b CPU:   IA-32 and Intel(R) 64 architectures\n
+ */
+extern BOOL PIN_CheckWriteAccessEx(VOID* addr, EXCEPTION_INFO* pExceptInfo);
 
 /*! @ingroup PIN_CONTROL
  * Given an aux vector entry type, returns the entry's value.

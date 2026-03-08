@@ -17,7 +17,7 @@
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Linux, Windows & macOS*\n
+  \b O/S:   Linux, Windows\n
   \b CPU:   All\n
 */
 extern VOID PIN_InitSymbols();
@@ -43,7 +43,7 @@ extern VOID PIN_InitSymbols();
 
   @par Availability:
   \b Mode:  JIT & Probe\n
-  \b O/S:   Windows, Linux & macOS*\n
+  \b O/S:   Windows, Linux\n
   \b CPU:   All\n
 */
 extern BOOL PIN_InitSymbolsAlt(SYMBOL_INFO_MODE mode);

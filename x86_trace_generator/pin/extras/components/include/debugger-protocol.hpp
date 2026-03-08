@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2021 Intel Corporation.
+ * Copyright (C) 2008-2024 Intel Corporation.
  * SPDX-License-Identifier: MIT
  */
 
@@ -152,9 +152,7 @@ enum OS
     OS_LINUX32,
     OS_LINUX64,
     OS_WINDOWS32,
-    OS_WINDOWS64,
-    OS_MAC32,
-    OS_MAC64
+    OS_WINDOWS64
 };
 
 /*!
@@ -635,10 +633,12 @@ struct /*<POD>*/ REG_DESCRIPTION
  *
  *  @param[in] flags    A bit-mask of flags indicating which library features the caller
  *                       intends to use.
+ *  @param[in] useRSC   Specifies whether the operations should be performed from RSC (Remote System Call)
+ *                       or LSC (Local System Call), with the default behavior set to false, indicating LSC.
  *
  * @return  TRUE on success.
  */
-DEBUGGER_PROTOCOL_API bool Initialize(INITIALIZE_FLAGS flags);
+DEBUGGER_PROTOCOL_API bool Initialize(INITIALIZE_FLAGS flags, bool useRSC = false);
 
 /*!
  * This function should be called to clean up resources when the caller is done using

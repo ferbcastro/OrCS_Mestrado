@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2018 Intel Corporation.
+# Copyright (C) 2012-2024 Intel Corporation.
 # SPDX-License-Identifier: MIT
 #
 
@@ -20,7 +20,7 @@
 #							  libraries when running the pindb program.
 #							  Relevant on Unix platforms only. On Windows this
 #							  variable is empty.
-# PINDB_WITH_LIBPATH		- Path to the pindb test-debugger program, preceeded
+# PINDB_WITH_LIBPATH		- Path to the pindb test-debugger program, preceded
 #							  by the library locations set in LOADER_LIBRARY_PATH.
 #							  Relevant on Unix platforms only. On Windows this
 #							  variable is identical to PINDB.
@@ -48,36 +48,27 @@ else
     PINDB_SUFFIX :=
 endif
 
-# These variables depend on whether we're running from a kit or source.
-ifeq ($(KIT),1)
-    BARE_PIN := $(PIN_ROOT)/pin$(PINDB_SUFFIX)
-    PINDB_PATH := $(PIN_ROOT)/$(TARGET)/bin/
-
-    # On Windows LOADER_LIBRARY_PATH is not available
-    ifeq ($(OS_TYPE),unix)
-        PINDB_LIBPATH := $(PIN_ROOT)/extras/xed-$(TARGET)/lib$(PATHS_SEPERATOR)$(PIN_ROOT)/$(TARGET)/runtime/pincrt
-        PINDB_SET_LIBRARIES := $(LOADER_LIBRARY_PATH)=$(PINDB_LIBPATH)$(PATHS_SEPERATOR)$$$(LOADER_LIBRARY_PATH)
-    endif
+BARE_PIN := $(PIN_ROOT)/pin$(PINDB_SUFFIX)
+# TODO on Windows after we will remove the old pincrt.dll and c++.dll from <TARGET>/bin folder, 
+# we have to move back pind.exe out of pinrt (same as on Linux)
+ifeq ($(TARGET_OS),windows)
+    PINDB_PATH := $(PIN_ROOT)/$(TARGET)/pinrt/bin/
 else
-    ifeq ($(TARGET_OS),windows)
-        BARE_PIN := $(PIN_ROOT)/build/Source/pin/pin-$(TARGET_OS)-$(TARGET)/pin$(EXE_SUFFIX)
-    else
-        BARE_PIN := $(PIN_ROOT)/Source/pin/pin-runner-$(TARGET_OS)-$(TARGET).sh
-    endif
-    PINDB_PATH := $(PIN_ROOT)/build/Source/pindb/export-$(TARGET_OS)-$(TARGET)/
-    
-    # On Windows LOADER_LIBRARY_PATH is not available
-    ifeq ($(OS_TYPE),unix)
-        PINDB_LIBPATH := $(abspath $(PIN_ROOT)/build/Source/bionic/stlport/export-$(TARGET_OS)-$(HOST_ARCH)-$(TARGET_OS)-$(TARGET)/$(TARGET))$(PATHS_SEPERATOR)
-        PINDB_LIBPATH := $(PINDB_LIBPATH)$(abspath $(PIN_ROOT)/build/Source/bionic/libm/export-$(TARGET_OS)-$(HOST_ARCH)-$(TARGET_OS)-$(TARGET)/$(TARGET))$(PATHS_SEPERATOR)
-        PINDB_LIBPATH := $(PINDB_LIBPATH)$(abspath $(PIN_ROOT)/build/Source/bionic/libdl/export-$(TARGET_OS)-$(HOST_ARCH)-$(TARGET_OS)-$(TARGET)/$(TARGET))$(PATHS_SEPERATOR)
-        PINDB_LIBPATH := $(PINDB_LIBPATH)$(abspath $(PIN_ROOT)/build/Source/bionic/libc/export-$(TARGET_OS)-$(HOST_ARCH)-$(TARGET_OS)-$(TARGET)/$(TARGET))$(PATHS_SEPERATOR)
-        PINDB_LIBPATH := $(PINDB_LIBPATH)$(PIN_ROOT)/build/Source/xed/xed-gcc-pin-$(TARGET_OS)-$(TARGET)/xed-kit/lib
-        PINDB_SET_LIBRARIES := $(LOADER_LIBRARY_PATH)=$(PINDB_LIBPATH)$(PATHS_SEPERATOR)$$$(LOADER_LIBRARY_PATH)
-    endif
+    PINDB_PATH := $(PIN_ROOT)/$(TARGET)/bin/
 endif
 
-PINDB := $(PINDB_PATH)pindb$(PINDB_SUFFIX)
+
+# On Windows LOADER_LIBRARY_PATH is not available
+ifeq ($(OS_TYPE),unix)
+    PINDB_LIBPATH := $(PIN_ROOT)/extras/xed-$(TARGET)/lib$(PATHS_SEPERATOR)$(PIN_ROOT)/$(TARGET)/pinrt/lib
+    PINDB_SET_LIBRARIES := $(LOADER_LIBRARY_PATH)=$(PINDB_LIBPATH)$(PATHS_SEPERATOR)$$$(LOADER_LIBRARY_PATH)
+endif
+
+ifeq ($(TARGET_OS),windows)
+    PINDB := $(PINDB_PATH)pindb$(PINDB_SUFFIX)
+else
+    PINDB := $(PIN_ROOT)/$(TARGET)/pinrt/bin/pin.ld.so $(PINDB_PATH)pindb$(PINDB_SUFFIX)
+endif
 PINDB_WITH_LIBPATH := $(PINDB_SET_LIBRARIES) $(PINDB)
 
 # These are the Pin flags needed to enable application debugging.
@@ -85,8 +76,4 @@ PINFLAGS_DEBUG := -appdebug
 PINFLAGS_DEBUG_RUNFREE := -appdebug_enable
 
 # Compare file extensions.
-ifeq ($(ICC),1)
-    COMPARE_EXT := compareICC
-else
-    COMPARE_EXT := compare
-endif
+COMPARE_EXT := compare

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2023 Intel Corporation.
+ * Copyright (C) 2020-2025 Intel Corporation.
  * SPDX-License-Identifier: MIT
  */
 
@@ -312,9 +312,9 @@ template< typename T > T RoundUp(T value, size_t alignment)
         return value;
     }
 
-    value += alignment - 1;
-    value /= alignment;
-    value *= alignment;
+    value += T(alignment - 1);
+    value /= T(alignment);
+    value *= T(alignment);
 
     return value;
 }
@@ -337,8 +337,8 @@ template< typename T > T RoundDown(T value, size_t alignment)
         return value;
     }
 
-    value /= alignment;
-    value *= alignment;
+    value /= T(alignment);
+    value *= T(alignment);
 
     return value;
 }
@@ -352,9 +352,20 @@ template< typename T > T* RoundDown(T* ptr, size_t alignment)
 }
 
 /*! @ingroup UTILS
+    Get the page size of the OS abstraction layer
+ */
+constexpr inline ADDRINT GetPageSize() noexcept
+{
+    return 4096; // When using PINOS Page Size is always 4K
+}
+
+/*! @ingroup UTILS
     Get the address of the page that addr is in
  */
-extern ADDRINT GetPageOfAddr(ADDRINT addr);
+constexpr inline ADDRINT GetPageOfAddr(ADDRINT addr) noexcept
+{
+    return addr & ~(GetPageSize() - 1);
+}
 
 #if !defined(TARGET_WINDOWS)
 
@@ -387,6 +398,11 @@ inline size_t PtrDiff(const VOID* ptr1, const VOID* ptr2)
   Return pointer whose offset, in bytes, from <ptr> is <offset>
  */
 inline VOID* PtrAtOffset(VOID* ptr, size_t offset) { return (reinterpret_cast< INT8* >(ptr) + offset); }
+
+/*! @ingroup UTILS
+  Return pointer whose offset, in bytes, from <ptr> is <-offset>
+ */
+inline VOID* PtrMinusOffset(VOID* ptr, size_t offset) { return (reinterpret_cast< INT8* >(ptr) - offset); }
 
 /*! @ingroup UTILS
   Return const pointer whose offset, in bytes, from <ptr> is <offset>
@@ -511,6 +527,34 @@ class MemRange
     *           otherwise - false
     */
     BOOL IsCurrentStack() const { return (Contains(GetSp())); }
+
+    /* Check to see whether the current stack pointer is in a valid and safe area
+    *  defined by the threshold parameter.
+    *  If the stack is within the range defined by threshold it is considered as unsafe.
+    *  Remark: Current uses threshold as the overflow stack area.
+    *
+    * @param[in] threshold  Maximum distance from memory range base that is considered as safe.
+    *
+    * @return   true, if current stack pointer is within the stack range and no more
+    *                 than one page from the bottom.
+    *           otherwise - false
+    */
+    BOOL IsStackSafe(size_t threshold) const
+    {
+        if (!IsCurrentStack())
+        {
+            return FALSE;
+        }
+
+        const void* sp = GetSp();
+        size_t dist = PtrDiff(sp, m_base);
+        if (dist < threshold)
+        {
+            return FALSE;
+        }
+
+        return TRUE;
+    }
 
     /*
     * Round base/end address of the range down/up according to specified alignment

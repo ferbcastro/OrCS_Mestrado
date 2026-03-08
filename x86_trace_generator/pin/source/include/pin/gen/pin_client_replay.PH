@@ -141,7 +141,7 @@ extern VOID PIN_ReplayContextChange(THREADID tid, const CONTEXT* from, CONTEXT* 
 extern VOID IMG_ReplayImageUnload(IMG img);
 
 /*! @ingroup PIN_CONTROL REPLAY
-  Return TRUE if PIN was successfully reserved the neccessary memory at application load
+  Return TRUE if PIN was successfully reserved the necessary memory at application load
   time (specified on the -reserve_memory knob), and was successfully restricted the memory
   from the loader (specified on the -restrict_memory knob).
   It is guaranteed this is the return value is FALSE then none the memory specified in the

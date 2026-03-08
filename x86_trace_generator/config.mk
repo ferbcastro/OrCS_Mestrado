@@ -1,10 +1,13 @@
 PINTOOL_UTILS_DIR = ./utils/
-TOOL_ROOTS = sinuca3_pintool
+TOOL_ROOTS = orcs_pintool
 FILE_HANDLER = file_handler
 PINTOOL_UTILS = dynamic_trace_writer memory_trace_writer static_trace_writer
 OBJ_DEPS = $(OBJDIR)$(TOOL_ROOTS)$(OBJ_SUFFIX) \
 		$(OBJDIR)$(FILE_HANDLER)$(OBJ_SUFFIX) \
 		$(addprefix $(OBJDIR),$(addsuffix $(OBJ_SUFFIX),$(PINTOOL_UTILS))) \
+
+TOOL_CXXFLAGS += -I./pin-zlib/include
+TOOL_LDFLAGS += -L./pin/intel64/runtime/pincrt/
 
 # This section contains the build rules for all binaries that have special build rules.
 # See makefile.default.rules for the default build rules.
@@ -19,4 +22,4 @@ $(OBJDIR)%_writer$(OBJ_SUFFIX): $(PINTOOL_UTILS_DIR)%_writer.cpp
 	$(CXX) $(TOOL_CXXFLAGS) -I.. $(COMP_OBJ)$@ $<
 
 $(OBJDIR)$(TOOL_ROOTS)$(PINTOOL_SUFFIX): $(OBJ_DEPS)
-	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS) ./pin-zlib/lib/libz.a
